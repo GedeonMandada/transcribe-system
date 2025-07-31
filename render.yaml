@@ -2,20 +2,9 @@ services:
   - type: web
     name: sermon-api
     env: node
-    plan: free # Or a paid plan for more resources
+    plan: free
     buildCommand: npm install
     startCommand: npm run start:prod
-    envVars:
-      - key: NODE_VERSION
-        value: 20
-      - fromGroup: sermon-processing-env
-
-  - type: worker
-    name: sermon-worker
-    env: node
-    plan: free # Or a paid plan for more resources
-    buildCommand: npm install
-    startCommand: npm run worker:prod
     envVars:
       - key: NODE_VERSION
         value: 20

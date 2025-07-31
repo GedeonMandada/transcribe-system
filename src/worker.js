@@ -3,7 +3,7 @@ import { Worker } from 'bullmq';
 import { processSermon } from './processing.js';
 import { connection } from './redis.js';
 
-new Worker('sermon-processing', async (job) => {
+const worker = new Worker('sermon-processing', async (job) => {
   const { sermon } = job.data;
   console.log(`Processing sermon with audio: ${sermon.audioUrl}`);
   try {
@@ -25,3 +25,13 @@ new Worker('sermon-processing', async (job) => {
 });
 
 console.log('Worker started and waiting for jobs...');
+
+const gracefulShutdown = async (signal) => {
+  console.log(`\nReceived ${signal}. Shutting down worker...`);
+  await worker.close();
+  console.log('Worker has been closed.');
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
