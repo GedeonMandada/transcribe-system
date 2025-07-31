@@ -1,22 +1,26 @@
+import '../config.js'; // Load environment variables first
 import express from 'express';
 import cors from 'cors';
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
-import dotenv from 'dotenv';
 import { sermonQueue } from './queue.js';
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-const s3Client = new S3Client({
-  region: 'auto',
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT_URL,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-  },
-});
+let s3Client;
+const getS3Client = () => {
+  if (!s3Client) {
+    s3Client = new S3Client({
+      region: 'auto',
+      endpoint: process.env.CLOUDFLARE_R2_ENDPOINT_URL,
+      credentials: {
+        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,
+        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+      },
+    });
+  }
+  return s3Client;
+};
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -40,7 +44,7 @@ app.get('/api/sermons', async (req, res) => {
     const command = new ListObjectsV2Command({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
     });
-    const { Contents } = await s3Client.send(command);
+    const { Contents } = await getS3Client().send(command);
 
     if (!Contents) {
       return res.send([]);
@@ -52,7 +56,7 @@ app.get('/api/sermons', async (req, res) => {
           Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
           Key: object.Key,
         });
-        const { Body } = await s3Client.send(getObjectCommand);
+        const { Body } = await getS3Client().send(getObjectCommand);
         const data = await Body.transformToString();
         return JSON.parse(data);
       })
@@ -72,4 +76,3 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-

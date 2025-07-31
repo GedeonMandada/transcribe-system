@@ -25,9 +25,17 @@ envVarGroups:
   - name: sermon-processing-env
     envVars:
       - key: REDIS_URL
+        value: ""
       - key: REPLICATE_API_TOKEN
+        value: ""
       - key: CLOUDFLARE_R2_ENDPOINT_URL
+        value: ""
       - key: CLOUDFLARE_R2_ACCESS_KEY_ID
+        value: ""
       - key: CLOUDFLARE_R2_SECRET_ACCESS_KEY
+        value: ""
       - key: CLOUDFLARE_R2_BUCKET_NAME
+        value: ""
+
+
 

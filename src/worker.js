@@ -1,11 +1,7 @@
+import '../config.js'; // Load environment variables first
 import { Worker } from 'bullmq';
 import { processSermon } from './processing.js';
-import Redis from 'ioredis';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const connection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null });
+import { connection } from './redis.js';
 
 new Worker('sermon-processing', async (job) => {
   const { sermon } = job.data;
