@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: sermon-api
+    env: node
+    plan: free # Or a paid plan for more resources
+    buildCommand: npm install
+    startCommand: npm run start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - fromGroup: sermon-processing-env
+
+  - type: worker
+    name: sermon-worker
+    env: node
+    plan: free # Or a paid plan for more resources
+    buildCommand: npm install
+    startCommand: npm run worker:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - fromGroup: sermon-processing-env
+
+envVarGroups:
+  - name: sermon-processing-env
+    envVars:
+      - key: REDIS_URL
+      - key: REPLICATE_API_TOKEN
+      - key: CLOUDFLARE_R2_ENDPOINT_URL
+      - key: CLOUDFLARE_R2_ACCESS_KEY_ID
+      - key: CLOUDFLARE_R2_SECRET_ACCESS_KEY
+      - key: CLOUDFLARE_R2_BUCKET_NAME
+

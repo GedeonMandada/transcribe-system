@@ -1,0 +1,279 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sermon Player</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    :root {
+      --highlight-bg: #fef3c7; 
+      --highlight-text: #1f2937;
+      --player-bg: #ffffff;
+      --text-color: #374151;
+      --text-inactive: #9ca3af;
+      --bg-color: #f9fafb;
+    }
+    html {
+      scroll-padding-top: 12rem; /* Reserve space for the sticky player */
+    }
+    body {
+      background-color: var(--bg-color);
+    }
+    .player-card {
+      position: sticky;
+      top: 1rem;
+      z-index: 10;
+      background-color: var(--player-bg);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 2rem;
+    }
+    .progress-bar-container {
+      background-color: #e5e7eb;
+      border-radius: 9999px;
+      cursor: pointer;
+      height: 0.5rem;
+      width: 100%;
+    }
+    .progress-bar {
+      background-color: var(--text-color);
+      border-radius: 9999px;
+      height: 100%;
+      transition: width 0.1s linear;
+    }
+    #transcript {
+      padding-top: 2rem;
+      padding-bottom: 50vh;
+    }
+    #transcript p {
+      color: var(--text-inactive);
+      transition: color 0.4s ease;
+      font-size: 1.5rem; /* Larger text for readability */
+      line-height: 1.8;
+      padding: 1rem;
+      border-radius: 0.75rem; /* Smoother rounded corners */
+    }
+    #transcript p.highlight {
+      color: var(--highlight-text);
+    }
+    .material-icons {
+      font-size: 3rem; /* Larger icons */
+      color: var(--text-color);
+      cursor: pointer;
+      transition: color 0.2s ease-in-out;
+    }
+    .material-icons:hover {
+      color: #000000;
+    }
+    #play-pause-icon {
+      font-size: 4.5rem; /* Prominent play/pause button */
+    }
+    .cover-icon {
+        font-size: 6rem;
+        color: #e5e7eb;
+    }
+  </style>
+</head>
+<body class="font-sans">
+  <div class="container mx-auto p-4 max-w-4xl">
+    <div class="player-card text-center mb-8">
+      <div class="flex justify-center items-center w-32 h-32 mx-auto mb-6 bg-gray-50 rounded-2xl shadow-inner">
+        <i class="material-icons cover-icon">music_note</i>
+      </div>
+      <h1 id="sermon-title" class="text-4xl font-bold text-gray-800 mb-4 truncate"></h1>
+      <div class="w-full mt-8">
+        <div id="progress-bar-container" class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="time-display" class="text-sm font-mono text-right mt-2 text-gray-500">00:00 / 00:00</div>
+      </div>
+      <div class="flex items-center justify-center gap-8 mt-4">
+        <button id="rewind-btn"><i class="material-icons">replay_10</i></button>
+        <button id="play-pause-btn"><i id="play-pause-icon" class="material-icons">play_arrow</i></button>
+        <button id="forward-btn"><i class="material-icons">forward_10</i></button>
+      </div>
+    </div>
+    
+    <div id="transcript"></div>
+  </div>
+
+  <audio id="audio-player" class="hidden"></audio>
+
+  <script>
+    // DOM Elements
+    const sermonTitle = document.getElementById('sermon-title');
+    const audioPlayer = document.getElementById('audio-player');
+    const transcriptDiv = document.getElementById('transcript');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playPauseIcon = document.getElementById('play-pause-icon');
+    const forwardBtn = document.getElementById('forward-btn');
+    const rewindBtn = document.getElementById('rewind-btn');
+    const progressBarContainer = document.getElementById('progress-bar-container');
+    const progressBar = document.getElementById('progress-bar');
+    const timeDisplay = document.getElementById('time-display');
+
+    let sermonData = null;
+    let currentHighlightedPhrase = null;
+
+    // Fetch and render data
+    const urlParams = new URLSearchParams(window.location.search);
+    const sermonId = urlParams.get('id');
+
+    if (sermonId) {
+      fetch(`/api/sermons`)
+        .then(response => response.json())
+        .then(sermons => {
+          sermonData = sermons.find(s => s.id === sermonId);
+          if (sermonData) {
+            renderSermon(sermonData);
+          } else {
+            document.body.innerHTML = '<div class="text-red-500 font-bold p-8 text-center">Sermon not found.</div>';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching sermon data:', error);
+          document.body.innerHTML = '<div class="text-red-500 font-bold p-8 text-center">Error loading sermon data.</div>';
+        });
+    }
+
+    const renderSermon = (sermon) => {
+      try {
+        if (!sermon.audioUrl) {
+          transcriptDiv.innerHTML = '<div class="text-red-500 font-bold">Error: Audio URL is missing.</div>';
+          return;
+        }
+
+        sermonTitle.innerText = sermon.title || sermon.id.replace(/[-_]/g, ' ');
+        sermonTitle.title = sermon.title || sermon.id;
+        audioPlayer.src = sermon.audioUrl;
+
+        let transcriptHtml = '';
+        let currentPhraseWords = [];
+
+        const processPhrase = () => {
+          if (currentPhraseWords.length === 0) return;
+          
+          const firstWordWithTime = currentPhraseWords.find(w => w.startTime !== null);
+          const lastWordWithTime = [...currentPhraseWords].reverse().find(w => w.endTime !== null);
+          
+          const phraseStartTime = firstWordWithTime ? firstWordWithTime.startTime : 0;
+          const phraseEndTime = lastWordWithTime ? lastWordWithTime.endTime : phraseStartTime;
+
+          transcriptHtml += `<p class="my-4 text-center" data-start="${phraseStartTime}" data-end="${phraseEndTime}">`;
+
+          currentPhraseWords.forEach(word => {
+            transcriptHtml += `<span>${word.word} </span>`;
+          });
+          transcriptHtml += `</p>`;
+          currentPhraseWords = [];
+        };
+
+        sermon.alignment.alignedText.forEach(word => {
+          currentPhraseWords.push(word);
+          if (/[.?!]$/.test(word.word)) {
+            processPhrase();
+          }
+        });
+        
+        processPhrase();
+
+        transcriptDiv.innerHTML = transcriptHtml;
+
+      } catch (error) {
+        console.error("Failed to render sermon:", error);
+        transcriptDiv.innerHTML = `<div class="text-red-500 font-bold">Error rendering transcript.</div>`;
+      }
+    };
+
+    // Player Controls
+    playPauseBtn.addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+      } else {
+        audioPlayer.pause();
+      }
+    });
+    
+    forwardBtn.addEventListener('click', () => {
+      audioPlayer.currentTime = Math.min(audioPlayer.duration, audioPlayer.currentTime + 10);
+    });
+
+    rewindBtn.addEventListener('click', () => {
+      audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - 10);
+    });
+
+    audioPlayer.addEventListener('play', () => { playPauseIcon.innerText = 'pause_circle'; });
+    audioPlayer.addEventListener('pause', () => { playPauseIcon.innerText = 'play_circle'; });
+    audioPlayer.addEventListener('ended', () => { playPauseIcon.innerText = 'replay_circle_filled'; });
+
+    audioPlayer.addEventListener('timeupdate', () => {
+      requestAnimationFrame(() => {
+        updateProgressBar();
+        updateTimeDisplay();
+        handleHighlighting();
+      });
+    });
+    
+    audioPlayer.addEventListener('loadedmetadata', () => { updateTimeDisplay(); });
+
+    progressBarContainer.addEventListener('click', (e) => {
+      const width = progressBarContainer.clientWidth;
+      const clickX = e.offsetX;
+      const duration = audioPlayer.duration;
+      if (duration) {
+        audioPlayer.currentTime = (clickX / width) * duration;
+      }
+    });
+
+    const updateProgressBar = () => {
+      const duration = audioPlayer.duration;
+      if (duration) {
+        const progress = (audioPlayer.currentTime / duration) * 100;
+        progressBar.style.width = `${progress}%`;
+      }
+    };
+
+    const formatTime = (time) => {
+        if (isNaN(time)) return '00:00';
+        const minutes = Math.floor(time / 60).toString().padStart(2, '0');
+        const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+        return `${minutes}:${seconds}`;
+    };
+
+    const updateTimeDisplay = () => {
+      timeDisplay.innerText = `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration || 0)}`;
+    };
+
+    // Highlighting Logic
+    const handleHighlighting = () => {
+      const currentTime = audioPlayer.currentTime;
+      const phrases = transcriptDiv.querySelectorAll('p[data-start]');
+      
+      let activePhrase = null;
+
+      phrases.forEach(phrase => {
+        const start = parseFloat(phrase.dataset.start);
+        const end = parseFloat(phrase.dataset.end);
+        if (currentTime >= start && currentTime < end) {
+          activePhrase = phrase;
+        }
+      });
+
+      if (activePhrase && activePhrase !== currentHighlightedPhrase) {
+        if(currentHighlightedPhrase) {
+            currentHighlightedPhrase.classList.remove('highlight');
+        }
+        activePhrase.classList.add('highlight');
+        activePhrase.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        currentHighlightedPhrase = activePhrase;
+      }
+    };
+  </script>
+</body>
+</html>
+

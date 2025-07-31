@@ -1,0 +1,14 @@
+{
+  "sermons": [
+    {
+      "pdfUrl": "https://d2w09gj4mqt5u.cloudfront.net/repo/d03/d03d787550165045895870cbe133576c764defd727bf2e0637783dca05b91f866020d18ceba1ce73dd49e8f768308058b35cfbe3a8a79498cd70f9f2c1966251.pdf",
+      "audioUrl": "https://d21kl6o5a7faj0.cloudfront.net/repo/faf/faff4381d1e2ef5ef8378e4969720207ec924e3b5ffaaab3d26ef7a2b1cb9f475acdc3e1d0729131a2c0d38e55cc54b716f5c54b706144d7741fffb2e5b5fd11.m4a",
+      "language": "fr"
+    },
+    {
+      "pdfUrl": "https://d2w09gj4mqt5u.cloudfront.net/repo/9f8/9f8ca33dfb1c546da84904d5644c10cfc30082c4c37653122f6c8d8322056e947a7ad55083db654c91636704f9a876fa075c65d2389cac94c0edbaf17ba48773.pdf",
+      "audioUrl": "https://d21kl6o5a7faj0.cloudfront.net/repo/ab9/ab90f4bd047f11d52be60bfd21e7914580f4733be10ad8880294a0f42780d7a729e8c4892beb70bda3de6175d4f89e5684007889d6424d0d12281ad4528ebc18.m4a",
+      "language": "fr"
+    }
+  ]
+}

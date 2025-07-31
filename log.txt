@@ -1,0 +1,163 @@
+
+--- 2025-07-29T10:01:54.404Z debug
+🪵  Writing logs to "C:\Users\SAMSUNG\AppData\Roaming\xdg.config\.wrangler\logs\wrangler-2025-07-29_10-01-54_078.log"
+---
+
+--- 2025-07-29T10:01:54.403Z debug
+Metrics dispatcher: Posting data {"deviceId":"2c39998c-b1c7-4d68-82f6-dd3f474e4d1f","event":"wrangler command started","timestamp":1753783314403,"properties":{"amplitude_session_id":1753783314398,"amplitude_event_id":0,"wranglerVersion":"4.26.0","osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":22,"packageManager":"npm","isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":true,"hasAssets":false,"argsUsed":[],"argsCombination":"","command":"wrangler deploy","args":{"xJsonConfig":true,"j":true,"noBundle":false,"latest":false,"keepVars":false,"xAutoCreate":true}}}
+---
+
+--- 2025-07-29T10:01:54.622Z log
+
+ ⛅️ wrangler 4.26.0 (update available [32m4.26.1[39m)
+[38;2;255;136;0m─────────────────────────────────────────────[39m
+---
+
+--- 2025-07-29T10:01:54.804Z debug
+Retrieving cached values for account from node_modules\.cache\wrangler
+---
+
+--- 2025-07-29T10:01:54.805Z debug
+Starting verifyWorkerMatchesCITag() with tag: undefined, name: sermon-processor
+---
+
+--- 2025-07-29T10:01:54.805Z debug
+No WRANGLER_CI_MATCH_TAG variable provided, aborting verifyWorkerMatchesCITag()
+---
+
+--- 2025-07-29T10:01:54.809Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/5bd06f49d962b4e58c0d7657dac7f848/workers/services/sermon-processor
+---
+
+--- 2025-07-29T10:01:54.810Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:54.810Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:54.810Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:54.810Z debug
+-- END CF API REQUEST
+---
+
+--- 2025-07-29T10:01:56.744Z debug
+-- START CF API RESPONSE: Not Found 404
+---
+
+--- 2025-07-29T10:01:56.745Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:56.745Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:56.745Z debug
+-- END CF API RESPONSE
+---
+
+--- 2025-07-29T10:01:56.753Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/5bd06f49d962b4e58c0d7657dac7f848/workers/scripts/sermon-processor/deployments
+---
+
+--- 2025-07-29T10:01:56.753Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:56.753Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:56.753Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:56.753Z debug
+-- END CF API REQUEST
+---
+
+--- 2025-07-29T10:01:58.456Z debug
+-- START CF API RESPONSE: Not Found 404
+---
+
+--- 2025-07-29T10:01:58.457Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:58.457Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2025-07-29T10:01:58.457Z debug
+-- END CF API RESPONSE
+---
+
+--- 2025-07-29T10:01:59.046Z log
+
+---
+
+--- 2025-07-29T10:01:59.245Z error
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 4 errors:[0m
+
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "path"[0m
+  
+      node_modules/dotenv/lib/main.js:2:21:
+  [37m      2 │ const path = require([32m'path'[37m)
+          ╵                      [32m~~~~~~[0m
+  
+    The package "path" wasn't found on the file system but is built into node.
+    - Make sure to prefix the module name with "node:" or update your compatibility_date to
+  2024-09-23 or later.
+  
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "os"[0m
+  
+      node_modules/dotenv/lib/main.js:3:19:
+  [37m      3 │ const os = require([32m'os'[37m)
+          ╵                    [32m~~~~[0m
+  
+    The package "os" wasn't found on the file system but is built into node.
+    - Make sure to prefix the module name with "node:" or update your compatibility_date to
+  2024-09-23 or later.
+  
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "crypto"[0m
+  
+      node_modules/dotenv/lib/main.js:4:23:
+  [37m      4 │ const crypto = require([32m'crypto'[37m)
+          ╵                        [32m~~~~~~~~[0m
+  
+    The package "crypto" wasn't found on the file system but is built into node.
+    - Make sure to prefix the module name with "node:" or update your compatibility_date to
+  2024-09-23 or later.
+  
+  
+  
+  [31mX [41;31m[[41;97mERROR[41;31m][0m [1mTop-level return cannot be used inside an
+  ECMAScript module[0m
+  
+      src/processing.js:225:2:
+  [37m      225 │   [32mreturn[37m;
+            ╵   [32m~~~~~~[0m
+  
+    This file is considered to be an ECMAScript module because of the "export" keyword here:
+  
+      src/processing.js:84:0:
+  [37m      84 │ [32mexport[37m const processSermon = async (sermon, env) => {
+           ╵ [32m~~~~~~[0m
+  
+  
+
+
+---
+
+--- 2025-07-29T10:01:59.249Z debug
+Metrics dispatcher: Posting data {"deviceId":"2c39998c-b1c7-4d68-82f6-dd3f474e4d1f","event":"wrangler command errored","timestamp":1753783319249,"properties":{"amplitude_session_id":1753783314398,"amplitude_event_id":1,"wranglerVersion":"4.26.0","osPlatform":"Windows","osVersion":"Windows 10 Pro","nodeVersion":22,"packageManager":"npm","isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":true,"hasAssets":false,"argsUsed":[],"argsCombination":"","command":"wrangler deploy","args":{"xJsonConfig":true,"j":true,"noBundle":false,"latest":false,"keepVars":false,"xAutoCreate":true},"durationMs":4900,"durationSeconds":4.9,"durationMinutes":0.08166666666666668,"errorType":"BuildFailure"}}
+---
