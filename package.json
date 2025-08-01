@@ -6,9 +6,9 @@
   "scripts": {
     "start": "nodemon --max-old-space-size=8192 src/index.js",
     "start:web:prod": "node --max-old-space-size=8192 src/index.js",
+    "start:prod": "concurrently \"npm:worker:prod\" \"npm:start:web:prod\"",
     "worker": "nodemon --max-old-space-size=8192 src/worker.js",
     "worker:prod": "node --max-old-space-size=8192 src/worker.js",
-    "start:prod": "concurrently \"npm:worker:prod\" \"npm:start:web:prod\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,8 +18,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.850.0",
     "bullmq": "^5.0.0",
-    "concurrently": "^8.2.2",
     "cors": "^2.8.5",
+    "concurrently": "^8.2.2",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "ioredis": "^5.0.0",

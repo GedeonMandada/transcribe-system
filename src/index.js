@@ -2,6 +2,7 @@ import '../config.js'; // Load environment variables first
 import express from 'express';
 import cors from 'cors';
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
+import { withRetry } from '../retry.js';
 import { sermonQueue } from './queue.js';
 
 const app = express();
@@ -41,10 +42,14 @@ app.post('/api/sermons/bulk', async (req, res) => {
 
 app.get('/api/sermons', async (req, res) => {
   try {
-    const command = new ListObjectsV2Command({
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+    const { Contents } = await withRetry(async () => {
+      const command = new ListObjectsV2Command({
+        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+      });
+      return getS3Client().send(command);
+    }, {
+      onRetry: (error, attempt) => console.warn(`R2 list objects attempt ${attempt} failed. Retrying...`, error.message)
     });
-    const { Contents } = await getS3Client().send(command);
 
     if (!Contents) {
       return res.send([]);
@@ -52,13 +57,17 @@ app.get('/api/sermons', async (req, res) => {
 
     const sermons = await Promise.all(
       Contents.map(async (object) => {
-        const getObjectCommand = new GetObjectCommand({
-          Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-          Key: object.Key,
+         return withRetry(async () => {
+          const getObjectCommand = new GetObjectCommand({
+            Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+            Key: object.Key,
+          });
+          const { Body } = await getS3Client().send(getObjectCommand);
+          const data = await Body.transformToString();
+          return JSON.parse(data);
+        }, {
+          onRetry: (error, attempt) => console.warn(`R2 get object "${object.Key}" attempt ${attempt} failed. Retrying...`, error.message)
         });
-        const { Body } = await getS3Client().send(getObjectCommand);
-        const data = await Body.transformToString();
-        return JSON.parse(data);
       })
     );
 

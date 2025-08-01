@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { alignText } from './align.js';
+import { withRetry } from './retry.js';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import fetch from 'node-fetch';
 import Replicate from 'replicate';
@@ -28,10 +29,15 @@ const uploadToR2 = async (fileName, data) => {
   });
 
   try {
-    await getS3Client().send(command);
+    await withRetry(() => getS3Client().send(command), {
+      onRetry: (error, attempt) => {
+        console.warn(`R2 upload attempt ${attempt} failed for ${fileName}. Retrying...`, error.message);
+      }
+    });
     console.log(`Successfully uploaded ${fileName} to R2.`);
   } catch (error) {
     console.error(`Error uploading ${fileName} to R2:`, error);
+    throw error; // Re-throw to allow the job to be marked as failed if R2 upload fails
   }
 };
 
@@ -88,11 +94,15 @@ export const processSermon = async (sermon, job) => {
 
   try {
     // Process PDF
-    const pdfResponse = await fetch(sermon.pdfUrl);
-    if (!pdfResponse.ok) {
-      throw new Error(`Failed to fetch PDF with status: ${pdfResponse.statusText}`);
-    }
-    const pdfBuffer = await pdfResponse.arrayBuffer();
+    const pdfBuffer = await withRetry(async () => {
+      const pdfResponse = await fetch(sermon.pdfUrl);
+      if (!pdfResponse.ok) {
+        throw new Error(`Failed to fetch PDF with status: ${pdfResponse.statusText}`);
+      }
+      return pdfResponse.arrayBuffer();
+    }, {
+      onRetry: (error, attempt) => console.warn(`PDF fetch attempt ${attempt} failed. Retrying...`, error.message)
+    });
 
     const pdfData = await pdfjsLib.getDocument(pdfBuffer).promise;
 
@@ -111,13 +121,15 @@ export const processSermon = async (sermon, job) => {
 
     // Transcribe Audio
     console.log(`Starting transcription for ${sermon.audioUrl}...`);
-    const replicatePrediction = await replicate.predictions.create({
-      version: '1395a1d7aa48a01094887250475f384d4bae08fd0616f9c405bb81d4174597ea',
-      input: {
-        audio_file: sermon.audioUrl,
-        language: sermon.language,
-        align_output: true,
-      },
+    const replicatePrediction = await withRetry(() => replicate.predictions.create({
+        version: '1395a1d7aa48a01094887250475f384d4bae08fd0616f9c405bb81d4174597ea',
+        input: {
+            audio_file: sermon.audioUrl,
+            language: sermon.language,
+            align_output: true,
+        },
+    }), {
+        onRetry: (error, attempt) => console.warn(`Replicate create prediction attempt ${attempt} failed. Retrying...`, error.message)
     });
 
     let transcription;
@@ -131,7 +143,11 @@ export const processSermon = async (sermon, job) => {
         console.log(`Extended lock for job ${job.id}`);
       }
 
-      const status = await replicate.predictions.get(replicatePrediction.id);
+      const status = await withRetry(() => replicate.predictions.get(replicatePrediction.id), {
+        onRetry: (error, attempt) => {
+            console.warn(`Replicate get prediction status attempt ${attempt} failed. Retrying...`, error.message);
+        }
+      });
 
       if (status.status === 'succeeded') {
         console.log('Transcription succeeded.');
