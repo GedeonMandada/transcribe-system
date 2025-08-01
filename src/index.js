@@ -1,8 +1,8 @@
-import '../config.js'; // Load environment variables first
+import './config.js'; // Load environment variables first
 import express from 'express';
 import cors from 'cors';
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
-import { withRetry } from '../retry.js';
+import { withRetry } from './retry.js';
 import { sermonQueue } from './queue.js';
 
 const app = express();

@@ -1,7 +1,7 @@
-import '../config.js'; // Load environment variables first
+import './config.js'; // Load environment variables first
 import { Worker } from 'bullmq';
 import { processSermon } from './processing.js';
-import { connection } from './redis.js';
+import { workerConnection } from './redis.js';
 
 const worker = new Worker('sermon-processing', async (job) => {
   const { sermon } = job.data;
@@ -14,7 +14,7 @@ const worker = new Worker('sermon-processing', async (job) => {
     throw error;
   }
 }, { 
-  connection,
+  connection: workerConnection,
   concurrency: 5, // Process up to 5 jobs concurrently
   // Allow jobs to run for up to 10 minutes
   lockDuration: 600000, 
