@@ -15,7 +15,7 @@ const sharedRedisOptions = {
 // It can have a limit on retries per request.
 export const queueConnection = new Redis(process.env.REDIS_URL, {
   ...sharedRedisOptions,
-  maxRetriesPerRequest: 3, // A sensible limit for API calls
+  maxRetriesPerRequest: 10, // Increased for better resilience on Render's free tier
 });
 
 // This client is specifically for the BullMQ Worker.
