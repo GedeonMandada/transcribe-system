@@ -1,14 +1,5 @@
-https://transcribe-system-five.vercel.app/sermons.html
+https://transcribe-system-il0rrpfaf-saintshubapp-8256s-projects.vercel.app/
 
-getting a 404 
-The page could not be found
-
-NOT_FOUND
-
-cpt1::wwz2c-1754051191006-0be129177a2a
-
-in the console log in the browser, i am getting this Error
-GET https://transcribe-system-five.vercel.app/api/sermons 404 (Not Found)
-(anonymous) @ sermons.html:18Understand this error
-VM23:1 Uncaught (in promise) SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
-
+404: NOT_FOUND
+Code: NOT_FOUND
+ID: cpt1::9x8xg-1754052059838-be87fa24b3d6

@@ -82,29 +82,4 @@ app.get('/', (req, res) => {
   res.sendFile('index.html', { root: 'public' });
 });
 
-const server = app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-const gracefulShutdown = async (signal) => {
-  console.log(`\nReceived ${signal}. Shutting down gracefully...`);
-
-  // Stop accepting new connections
-  server.close(async () => {
-    console.log('HTTP server closed.');
-
-    // Close the queue connection
-    try {
-      await sermonQueue.close();
-      console.log('BullMQ queue connection closed.');
-    } catch (err) {
-      console.error('Error closing BullMQ queue:', err);
-    }
-
-    // exit the process
-    process.exit(0);
-  });
-};
-
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+export default app;
