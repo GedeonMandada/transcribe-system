@@ -1,17 +1,14 @@
-https://sermon-api-aqtq.onrender.com/sermons.html
+https://transcribe-system-five.vercel.app/sermons.html
 
+getting a 404 
+The page could not be found
 
+NOT_FOUND
 
+cpt1::wwz2c-1754051191006-0be129177a2a
 
-[start:web:prod] Redis (Queue/API): Connection established.
-[start:web:prod] Redis: Retrying connection, attempt 8, delay 4000ms
-[start:web:prod] Redis (Queue/API): Connection error: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.
-[start:web:prod] MaxRetriesPerRequestError: Reached the max retries per request limit (which is 3). Refer to "maxRetriesPerRequest" option for details.
-[start:web:prod]     at Socket.<anonymous> (/opt/render/project/src/node_modules/ioredis/built/redis/event_handler.js:182:37)
-[start:web:prod]     at Object.onceWrapper (node:events:639:26)
-[start:web:prod]     at Socket.emit (node:events:524:28)
-[start:web:prod]     at TCP.<anonymous> (node:net:343:12)
-[worker:prod] Redis (Worker): Connection established.
-[worker:prod] Redis: Retrying connection, attempt 8, delay 4000ms
-[worker:prod] Redis: Retrying connection, attempt 8, delay 4000ms
-[worker:prod] Redis: Retrying connection, attempt 9, delay 4500ms
+in the console log in the browser, i am getting this Error
+GET https://transcribe-system-five.vercel.app/api/sermons 404 (Not Found)
+(anonymous) @ sermons.html:18Understand this error
+VM23:1 Uncaught (in promise) SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+
