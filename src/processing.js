@@ -1,6 +1,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { alignText } from './align.js';
-import { withRetry } from './retry.js';
+import { withRetry } from '../retry.js';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import fetch from 'node-fetch';
 import Replicate from 'replicate';
