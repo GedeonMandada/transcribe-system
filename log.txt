@@ -1,21 +1,40 @@
-Worker started and waiting for jobs...
-Redis (Worker): Connection established.
-Processing sermon with audio: https://d21kl6o5a7faj0.cloudfront.net/repo/84e/84e3fa5d6fba8557491c2bc8fb424fcf3ca6845284a22cce3e30f260f009761e320d9f1a56f6d25f17bd64fcb08c427a0d67a9b642b7e2bf83f9a13a48fca8ec.m4a
-Delimiter found. Cleaning PDF text...
-Starting transcription for https://d21kl6o5a7faj0.cloudfront.net/repo/84e/84e3fa5d6fba8557491c2bc8fb424fcf3ca6845284a22cce3e30f260f009761e320d9f1a56f6d25f17bd64fcb08c427a0d67a9b642b7e2bf83f9a13a48fca8ec.m4a...
-Extended lock for job 13
-Transcription status: processing. Polling again in 30s...
-Extended lock for job 13
-Transcription status: processing. Polling again in 30s...
-Redis: Retrying connection, attempt 1, delay 500ms
-Extended lock for job 13
-Transcription status: processing. Polling again in 30s...
-Redis: Retrying connection, attempt 1, delay 500ms
-Extended lock for job 13
-Transcription status: processing. Polling again in 30s...
-Extended lock for job 13
-Transcription status: processing. Polling again in 30s...
-Extended lock for job 13
-Transcription succeeded.
-Successfully uploaded a_pocalypse_chapitre_cinq_2_e_partie_fr_la2rkz.json to R2.
-Finished processing sermon with audio: https://d21kl6o5a7faj0.cloudfront.net/repo/84e/84e3fa5d6fba8557491c2bc8fb424fcf3ca6845284a22cce3e30f260f009761e320d9f1a56f6d25f17bd64fcb08c427a0d67a9b642b7e2bf83f9a13a48fca8ec.m4a
+$ git push -u origin main --force
+Enumerating objects: 11, done.
+Counting objects: 100% (11/11), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (6/6), 1.54 KiB | 524.00 KiB/s, done.
+Total 6 (delta 4), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote:
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote:
+remote:     - Push cannot contain secrets
+remote:
+remote:
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-
+secret-scanning-and-push-protection/working-with-push-protection-from-the-comman
+d-line#resolving-a-blocked-push
+remote:
+remote:
+remote:       —— Replicate API Token ———————————————————————————————
+remote:        locations:
+remote:          - commit: 9b60d5ee69f5975008ca740eaebee6f8a875a195
+remote:            path: .env:1
+remote:
+remote:        (?) To push, remove secret from commit(s) or follow this URL to a
+llow the secret.
+remote:        https://github.com/GedeonMandada/transcribe-system/security/secre
+t-scanning/unblock-secret/30jiV3U06ZcIzQH6lF9RMACsTl9
+remote:
+remote:
+remote:
+To https://github.com/GedeonMandada/transcribe-system.git
+ ! [remote rejected] main -> main (push declined due to repository rule violatio
+ns)
+error: failed to push some refs to 'https://github.com/GedeonMandada/transcribe-
+system.git'
