@@ -1,52 +1,50 @@
-okay so i did just that, but got an ERROR
-sermons.html:18 
- GET http://localhost:3000/api/sermons net::ERR_CONNECTION_REFUSED
-
-sermons.html:18 
- Uncaught (in promise) TypeError: Failed to fetch
-    at sermons.html:18:5
-
-
-
-
-WHAT I WANT
-in the api/sermons route, we should be simply fetching the saved json files in cloudflare r2 storage and display them on the page.
-i do not know why this is failing.
-we should only be fetching data here from cloudflare and display it.
-
-
-here is the errors from vscode console
-
-Server is running on port 3000
-Redis (Queue/API): Connection established.
-
-<--- Last few GCs --->
-
-[14804:000002B665523000]    78276 ms: Scavenge (interleaved) 506.6 (522.1) -> 506.6 (530.1) MB, pooled: 0 MB, 37.51 / 0.00 ms  (average mu = 0.457, current mu = 0.332) allocation failure;
-[14804:000002B665523000]    79360 ms: Mark-Compact (reduce) 510.3 (530.3) -> 509.7 (522.1) MB, pooled: 0 MB, 324.69 / 0.00 ms  (+ 495.3 ms in 0 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 947 ms) (average mu = 0.441,
-
-<--- JS stacktrace --->
-
-FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
------ Native stack trace -----
-
- 1: 00007FF75F280CD7 node::SetCppgcReference+16599
- 2: 00007FF75F1E4568 v8::base::CPU::num_virtual_address_bits+103336
- 3: 00007FF75FD553B1 v8::Isolate::ReportExternalAllocationLimitReached+65
- 4: 00007FF75FD41F36 v8::Function::Experimental_IsNopFunction+3302
- 5: 00007FF75FB9E870 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
- 6: 00007FF75FB9AEFA v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+19194
- 7: 00007FF75FB6225C v8::FixedArray::Length+179276
- 8: 00007FF75F15A738 DH_get0_priv_key+6088
- 9: 00007FF75F158AA2 node::TriggerNodeReport+83730
-10: 00007FF75F2F369B uv_update_time+475
-11: 00007FF75F2F31E6 uv_run+886
-12: 00007FF75F2C2F65 node::SpinEventLoop+405
-13: 00007FF75F18764A v8_inspector::protocol::Binary::operator=+124762
-14: 00007FF75F22F700 node::Start+4800
-15: 00007FF75F22E45E node::Start+30
-16: 00007FF75EF9F30C AES_cbc_encrypt+158012
-17: 00007FF760AAF8CC inflateValidate+40748
-18: 00007FFCFBAE7374 BaseThreadInitThunk+20
-19: 00007FFCFD6FCC91 RtlUserThreadStart+33
-[nodemon] app crashed - waiting for file changes before starting...
+2025-08-02T12:55:22.215343411Z ==> Deploying...
+2025-08-02T12:55:54.031839263Z ==> Your service is live 🎉
+2025-08-02T12:55:54.059385088Z ==> 
+2025-08-02T12:55:54.085355963Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T12:55:54.109387129Z ==> 
+2025-08-02T12:55:54.131667395Z ==> Available at your primary URL https://sermon-api-aqtq.onrender.com
+2025-08-02T12:55:54.15560151Z ==> 
+2025-08-02T12:55:54.179862996Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T12:57:32.885190178Z > replicate@1.0.0 start:web:prod
+2025-08-02T12:57:32.885198249Z > node --max-old-space-size=512 src/index.js
+2025-08-02T12:57:32.885202259Z 
+2025-08-02T12:57:35.376201593Z [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+2025-08-02T12:57:38.186404189Z Server is running on port 10000
+2025-08-02T12:57:38.287116135Z Redis (Queue/API): Connection established.
+2025-08-02T12:58:49.3906308Z ==> Running 'npm run start:prod'
+2025-08-02T12:58:50.396905901Z 
+2025-08-02T12:58:50.396928373Z > replicate@1.0.0 start:prod
+2025-08-02T12:58:50.396932103Z > npm run start:web:prod
+2025-08-02T12:58:50.396933803Z 
+2025-08-02T12:58:51.489754322Z 
+2025-08-02T12:58:51.489778984Z > replicate@1.0.0 start:web:prod
+2025-08-02T12:58:51.489782854Z > node --max-old-space-size=512 src/index.js
+2025-08-02T12:58:51.489785445Z 
+2025-08-02T12:58:54.099348032Z [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+2025-08-02T12:58:56.995524005Z Server is running on port 10000
+2025-08-02T12:58:57.09051638Z Redis (Queue/API): Connection established.
+2025-08-02T13:00:55.602876688Z ==> Detected service running on port 10000
+2025-08-02T13:00:55.707444134Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-08-02T13:15:52.000379516Z ==> Deploying...
+2025-08-02T13:16:08.937967845Z ==> Running 'npm run start:prod'
+2025-08-02T13:16:10.037741203Z 
+2025-08-02T13:16:10.037764284Z > replicate@1.0.0 start:prod
+2025-08-02T13:16:10.037768674Z > npm run start:web:prod
+2025-08-02T13:16:10.037770734Z 
+2025-08-02T13:16:11.233461404Z 
+2025-08-02T13:16:11.233491454Z > replicate@1.0.0 start:web:prod
+2025-08-02T13:16:11.233495324Z > node --max-old-space-size=512 src/index.js
+2025-08-02T13:16:11.233498204Z 
+2025-08-02T13:16:13.641933354Z [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+2025-08-02T13:16:16.343238593Z Server is running on port 10000
+2025-08-02T13:16:16.44530874Z Redis (Queue/API): Connection established.
+2025-08-02T13:16:22.778293665Z ==> Your service is live 🎉
+2025-08-02T13:16:22.80785949Z ==> 
+2025-08-02T13:16:22.834955656Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T13:16:22.861840471Z ==> 
+2025-08-02T13:16:22.891533865Z ==> Available at your primary URL https://sermon-api-aqtq.onrender.com
+2025-08-02T13:16:22.91928577Z ==> 
+2025-08-02T13:16:22.947448335Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T13:21:26.576734571Z ==> Detected service running on port 10000
+2025-08-02T13:21:26.714376338Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
