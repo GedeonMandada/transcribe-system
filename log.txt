@@ -1,40 +1,23 @@
-$ git push -u origin main --force
-Enumerating objects: 11, done.
-Counting objects: 100% (11/11), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (6/6), done.
-Writing objects: 100% (6/6), 1.54 KiB | 524.00 KiB/s, done.
-Total 6 (delta 4), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
-remote: error: GH013: Repository rule violations found for refs/heads/main.
-remote:
-remote: - GITHUB PUSH PROTECTION
-remote:   —————————————————————————————————————————
-remote:     Resolve the following violations before pushing again
-remote:
-remote:     - Push cannot contain secrets
-remote:
-remote:
-remote:      (?) Learn how to resolve a blocked push
-remote:      https://docs.github.com/code-security/secret-scanning/working-with-
-secret-scanning-and-push-protection/working-with-push-protection-from-the-comman
-d-line#resolving-a-blocked-push
-remote:
-remote:
-remote:       —— Replicate API Token ———————————————————————————————
-remote:        locations:
-remote:          - commit: 9b60d5ee69f5975008ca740eaebee6f8a875a195
-remote:            path: .env:1
-remote:
-remote:        (?) To push, remove secret from commit(s) or follow this URL to a
-llow the secret.
-remote:        https://github.com/GedeonMandada/transcribe-system/security/secre
-t-scanning/unblock-secret/30jiV3U06ZcIzQH6lF9RMACsTl9
-remote:
-remote:
-remote:
-To https://github.com/GedeonMandada/transcribe-system.git
- ! [remote rejected] main -> main (push declined due to repository rule violatio
-ns)
-error: failed to push some refs to 'https://github.com/GedeonMandada/transcribe-
-system.git'
+PS C:\Users\SAMSUNG\Downloads\replicate> npm start
+
+> replicate@1.0.0 start
+> nodemon --max-old-space-size=512 src/index.js
+
+[nodemon] 3.1.10
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching path(s): *.*
+[nodemon] watching extensions: js,mjs,cjs,json
+[nodemon] starting `node --max-old-space-size=512 src/index.js`
+[dotenv@17.2.1] injecting env (7) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.loc
+al', '.env'] }
+file:///C:/Users/SAMSUNG/Downloads/replicate/src/queue.js:7
+export const sermonQueueEvents = new QueueEvents('sermon-processing', { connection: workerConnection });                                                                                    ^
+
+ReferenceError: workerConnection is not defined
+    at file:///C:/Users/SAMSUNG/Downloads/replicate/src/queue.js:7:85
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.17.1
+[nodemon] app crashed - waiting for file changes before starting...

@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { withRetry } from './retry.js';
-import { sermonQueue } from './queue.js';
+import { sermonQueue, sermonQueueEvents } from './queue.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,17 +27,62 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
+const isValidUrl = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 app.post('/api/sermons/bulk', async (req, res) => {
   const { sermons } = req.body;
-  if (!sermons || !Array.isArray(sermons)) {
-    return res.status(400).send({ message: 'Invalid request body' });
+  if (!sermons || !Array.isArray(sermons) || sermons.length === 0) {
+    return res.status(400).send({ message: 'Invalid request body: "sermons" array is missing or empty.' });
   }
 
+  const submittedJobs = [];
   for (const sermon of sermons) {
-    await sermonQueue.add('process-sermon', { sermon });
+    if (!sermon.pdfUrl || !isValidUrl(sermon.pdfUrl)) {
+      return res.status(400).send({ message: `Invalid PDF URL: ${sermon.pdfUrl}` });
+    }
+    if (!sermon.audioUrl || !isValidUrl(sermon.audioUrl)) {
+      return res.status(400).send({ message: `Invalid Audio URL: ${sermon.audioUrl}` });
+    }
+    if (!sermon.language) {
+      return res.status(400).send({ message: 'Language is required for each sermon.' });
+    }
+
+    const job = await sermonQueue.add('process-sermon', { sermon });
+    submittedJobs.push({ jobId: job.id, status: 'queued', sermon: sermon });
   }
 
-  res.status(202).send({ message: 'Sermon processing started in the background.' });
+  res.status(202).send({ message: 'Sermon processing started in the background.', jobs: submittedJobs });
+});
+
+app.get('/api/sermons/status/:jobId', async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    const job = await sermonQueue.getJob(jobId);
+
+    if (!job) {
+      return res.status(404).send({ message: 'Job not found.' });
+    }
+
+    const state = await job.getState();
+    res.send({
+      jobId: job.id,
+      status: state,
+      data: job.data.sermon,
+      returnvalue: job.returnvalue,
+      failedReason: job.failedReason,
+      stacktrace: job.stacktrace,
+    });
+  } catch (error) {
+    console.error(`Error fetching job status for ${jobId}:`, error);
+    res.status(500).send({ message: 'Error fetching job status.' });
+  }
 });
 
 app.get('/api/sermons', async (req, res) => {
@@ -102,6 +147,12 @@ app.get('/api/sermons/:id', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.sendFile('index.html', { root: 'public' });
+});
+
+// Centralized Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack); // Log the error stack for debugging
+  res.status(500).send({ message: 'Something broke!', error: err.message });
 });
 
 const server = app.listen(port, () => {

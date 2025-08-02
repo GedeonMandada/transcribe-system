@@ -26,6 +26,23 @@ const worker = new Worker('sermon-processing', async (job) => {
 
 console.log('Worker started and waiting for jobs...');
 
+// Add event listeners for worker for better error reporting
+worker.on('completed', (job) => {
+  console.log(`Job ${job.id} completed.`);
+});
+
+worker.on('failed', (job, err) => {
+  console.error(`Job ${job.id} failed with error: ${err.message}`);
+  if (job.stacktrace) {
+    console.error('Stacktrace:', job.stacktrace);
+  }
+});
+
+worker.on('error', (err) => {
+  // General worker errors (e.g., Redis connection issues)
+  console.error('Worker experienced an error:', err.message);
+});
+
 const gracefulShutdown = async (signal) => {
   console.log(`\nReceived ${signal}. Shutting down worker...`);
   await worker.close();

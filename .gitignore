@@ -1,2 +1,5 @@
 .env
 node_modules/
+
+# YoYo AI version control directory
+.yoyo/
