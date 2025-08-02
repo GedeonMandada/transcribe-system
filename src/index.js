@@ -55,26 +55,48 @@ app.get('/api/sermons', async (req, res) => {
       return res.send([]);
     }
 
-    const sermons = await Promise.all(
-      Contents.map(async (object) => {
-         return withRetry(async () => {
-          const getObjectCommand = new GetObjectCommand({
-            Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-            Key: object.Key,
-          });
-          const { Body } = await getS3Client().send(getObjectCommand);
-          const data = await Body.transformToString();
-          return JSON.parse(data);
-        }, {
-          onRetry: (error, attempt) => console.warn(`R2 get object "${object.Key}" attempt ${attempt} failed. Retrying...`, error.message)
-        });
-      })
-    );
+    // Only return metadata (id and title) to avoid memory issues
+    const sermonsMetadata = Contents.map(object => {
+      const id = object.Key.replace('.json', ''); // Assuming filename is the ID
+      // Attempt to extract title from the ID, or use a default
+      const parts = id.split('_');
+      const title = parts.slice(0, -2).join(' ').replace(/_/g, ' ') || 'Untitled Sermon'; // Remove last two parts (language and random ID)
+      return { id, title };
+    });
 
-    res.send(sermons);
+    res.send(sermonsMetadata);
   } catch (error) {
-    console.error('Error fetching sermons from R2:', error);
-    res.status(500).send({ message: 'Error fetching sermons' });
+    console.error('Error listing sermons from R2:', error);
+    res.status(500).send({ message: 'Error listing sermons' });
+  }
+});
+
+app.get('/api/sermons/:id', async (req, res) => {
+  const sermonId = req.params.id;
+  try {
+    const { Body } = await withRetry(async () => {
+      const getObjectCommand = new GetObjectCommand({
+        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+        Key: `${sermonId}.json`,
+      });
+      return getS3Client().send(getObjectCommand);
+    }, {
+      onRetry: (error, attempt) => console.warn(`R2 get object "${sermonId}.json" attempt ${attempt} failed. Retrying...`, error.message)
+    });
+
+    if (!Body) {
+      return res.status(404).send({ message: 'Sermon not found' });
+    }
+
+    const data = await Body.transformToString();
+    res.send(JSON.parse(data));
+  } catch (error) {
+    console.error(`Error fetching sermon ${sermonId} from R2:`, error);
+    if (error.name === 'NoSuchKey') {
+      res.status(404).send({ message: 'Sermon not found' });
+    } else {
+      res.status(500).send({ message: 'Error fetching sermon' });
+    }
   }
 });
 

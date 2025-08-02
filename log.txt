@@ -1,104 +1,52 @@
-so this is what i have done. i access https://sermon-api-aqtq.onrender.com/
-then i clicked the view sermons button link, which now redirected me to https://sermon-api-aqtq.onrender.com/sermons.html
-now, once i am redirected here, i made sure to have my network tab open to see all requests.
-from what i have observed, there was a pending request of GET https://sermon-api-aqtq.onrender.com/api/sermons
-this lasted about 33 seconds before it eventually gave 502 status code
-
-Request URL
-https://sermon-api-aqtq.onrender.com/api/sermons
-Request Method
-GET
-Status Code
-502 Bad Gateway
-
-Then i checked the console log for any error, and thats when i saw this error
+okay so i did just that, but got an ERROR
+sermons.html:18 
+ GET http://localhost:3000/api/sermons net::ERR_CONNECTION_REFUSED
 
 sermons.html:18 
- GET https://sermon-api-aqtq.onrender.com/api/sermons 502 (Bad Gateway)
- error message: Failed to load resource: the server responded with a status of 502 ()
- code:
- fetch('/api/sermons')
-      .then(response => response.json())
-      .then(sermons => {
-        sermons.forEach(sermon => {
-          const sermonCard = `
-            <div class="bg-white p-4 rounded-lg shadow-md">
-              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.id}">${sermon.id}</h2>
-              <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
-            </div>
-          `;
-          sermonList.innerHTML += sermonCard;
-        });
-      });
+ Uncaught (in promise) TypeError: Failed to fetch
+    at sermons.html:18:5
 
-
-Uncaught (in promise) SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
-    at sermons.html:19:34
-    error message: Uncaught (in promise) SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
-    code:
-    fetch('/api/sermons')
-      .then(response => response.json())
-      .then(sermons => {
-        sermons.forEach(sermon => {
-          const sermonCard = `
-            <div class="bg-white p-4 rounded-lg shadow-md">
-              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.id}">${sermon.id}</h2>
-              <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
-            </div>
-          `;
-          sermonList.innerHTML += sermonCard;
-        });
-      });
 
 
 
 WHAT I WANT
 in the api/sermons route, we should be simply fetching the saved json files in cloudflare r2 storage and display them on the page.
 i do not know why this is failing.
+we should only be fetching data here from cloudflare and display it.
 
 
+here is the errors from vscode console
+
+Server is running on port 3000
 Redis (Queue/API): Connection established.
-Redis (Queue/API): Connection error: read ECONNRESET
-Redis: Retrying connection, attempt 24, delay 10000ms
-Error: read ECONNRESET
-    at TCP.onStreamRead (node:internal/stream_base_commons:218:20) {
-  errno: -104,
-  code: 'ECONNRESET',
-  syscall: 'read'
-}
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 25, delay 10000ms
-==> Running 'npm run start:prod'
-> replicate@1.0.0 start:prod
-> npm run start:web:prod
-> replicate@1.0.0 start:web:prod
-> node --max-old-space-size=512 src/index.js
-[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
-Server is running on port 10000
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 1, delay 500ms
-Error: Connection is closed.
-    at EventEmitter.connectionCloseHandler (/opt/render/project/src/node_modules/ioredis/built/Redis.js:207:28)
-    at Object.onceWrapper (node:events:639:26)
-    at EventEmitter.emit (node:events:536:35)
-    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 2, delay 1000ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 3, delay 1500ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 4, delay 2000ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 5, delay 2500ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 6, delay 3000ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 7, delay 3500ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 8, delay 4000ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 9, delay 4500ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 10, delay 5000ms
-Redis (Queue/API): Connection established.
-Redis: Retrying connection, attempt 11, delay 5500ms
+
+<--- Last few GCs --->
+
+[14804:000002B665523000]    78276 ms: Scavenge (interleaved) 506.6 (522.1) -> 506.6 (530.1) MB, pooled: 0 MB, 37.51 / 0.00 ms  (average mu = 0.457, current mu = 0.332) allocation failure;
+[14804:000002B665523000]    79360 ms: Mark-Compact (reduce) 510.3 (530.3) -> 509.7 (522.1) MB, pooled: 0 MB, 324.69 / 0.00 ms  (+ 495.3 ms in 0 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 947 ms) (average mu = 0.441,
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF75F280CD7 node::SetCppgcReference+16599
+ 2: 00007FF75F1E4568 v8::base::CPU::num_virtual_address_bits+103336
+ 3: 00007FF75FD553B1 v8::Isolate::ReportExternalAllocationLimitReached+65
+ 4: 00007FF75FD41F36 v8::Function::Experimental_IsNopFunction+3302
+ 5: 00007FF75FB9E870 v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+33904
+ 6: 00007FF75FB9AEFA v8::internal::StrongRootAllocatorBase::StrongRootAllocatorBase+19194
+ 7: 00007FF75FB6225C v8::FixedArray::Length+179276
+ 8: 00007FF75F15A738 DH_get0_priv_key+6088
+ 9: 00007FF75F158AA2 node::TriggerNodeReport+83730
+10: 00007FF75F2F369B uv_update_time+475
+11: 00007FF75F2F31E6 uv_run+886
+12: 00007FF75F2C2F65 node::SpinEventLoop+405
+13: 00007FF75F18764A v8_inspector::protocol::Binary::operator=+124762
+14: 00007FF75F22F700 node::Start+4800
+15: 00007FF75F22E45E node::Start+30
+16: 00007FF75EF9F30C AES_cbc_encrypt+158012
+17: 00007FF760AAF8CC inflateValidate+40748
+18: 00007FFCFBAE7374 BaseThreadInitThunk+20
+19: 00007FFCFD6FCC91 RtlUserThreadStart+33
+[nodemon] app crashed - waiting for file changes before starting...

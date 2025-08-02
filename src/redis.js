@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 const sharedRedisOptions = {
   // A robust retry strategy for reconnecting.
   retryStrategy(times) {
-    const delay = Math.min(times * 500, 10000);
+    const delay = Math.min(times * 500, 30000);
     console.log(`Redis: Retrying connection, attempt ${times}, delay ${delay}ms`);
     return delay;
   },

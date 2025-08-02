@@ -125,10 +125,10 @@
     const sermonId = urlParams.get('id');
 
     if (sermonId) {
-      fetch(`/api/sermons`)
+      fetch(`/api/sermons/${sermonId}`)
         .then(response => response.json())
-        .then(sermons => {
-          sermonData = sermons.find(s => s.id === sermonId);
+        .then(sermon => {
+          sermonData = sermon;
           if (sermonData) {
             renderSermon(sermonData);
           } else {

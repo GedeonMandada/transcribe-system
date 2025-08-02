@@ -21,7 +21,7 @@
         sermons.forEach(sermon => {
           const sermonCard = `
             <div class="bg-white p-4 rounded-lg shadow-md">
-              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.id}">${sermon.id}</h2>
+              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.title}">${sermon.title}</h2>
               <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
             </div>
           `;
