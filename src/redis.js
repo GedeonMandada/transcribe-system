@@ -9,6 +9,7 @@ const sharedRedisOptions = {
     return delay;
   },
   lazyConnect: true,
+  keepAlive: 10000, // Keep connection alive by sending PING every 10 seconds
 };
 
 // This client is for non-blocking commands (e.g., adding jobs to the queue).

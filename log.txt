@@ -1,2 +1,104 @@
-==> No open ports detected, continuing to scan...
-==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+so this is what i have done. i access https://sermon-api-aqtq.onrender.com/
+then i clicked the view sermons button link, which now redirected me to https://sermon-api-aqtq.onrender.com/sermons.html
+now, once i am redirected here, i made sure to have my network tab open to see all requests.
+from what i have observed, there was a pending request of GET https://sermon-api-aqtq.onrender.com/api/sermons
+this lasted about 33 seconds before it eventually gave 502 status code
+
+Request URL
+https://sermon-api-aqtq.onrender.com/api/sermons
+Request Method
+GET
+Status Code
+502 Bad Gateway
+
+Then i checked the console log for any error, and thats when i saw this error
+
+sermons.html:18 
+ GET https://sermon-api-aqtq.onrender.com/api/sermons 502 (Bad Gateway)
+ error message: Failed to load resource: the server responded with a status of 502 ()
+ code:
+ fetch('/api/sermons')
+      .then(response => response.json())
+      .then(sermons => {
+        sermons.forEach(sermon => {
+          const sermonCard = `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.id}">${sermon.id}</h2>
+              <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
+            </div>
+          `;
+          sermonList.innerHTML += sermonCard;
+        });
+      });
+
+
+Uncaught (in promise) SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    at sermons.html:19:34
+    error message: Uncaught (in promise) SyntaxError: Failed to execute 'json' on 'Response': Unexpected end of JSON input
+    code:
+    fetch('/api/sermons')
+      .then(response => response.json())
+      .then(sermons => {
+        sermons.forEach(sermon => {
+          const sermonCard = `
+            <div class="bg-white p-4 rounded-lg shadow-md">
+              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.id}">${sermon.id}</h2>
+              <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
+            </div>
+          `;
+          sermonList.innerHTML += sermonCard;
+        });
+      });
+
+
+
+WHAT I WANT
+in the api/sermons route, we should be simply fetching the saved json files in cloudflare r2 storage and display them on the page.
+i do not know why this is failing.
+
+
+Redis (Queue/API): Connection established.
+Redis (Queue/API): Connection error: read ECONNRESET
+Redis: Retrying connection, attempt 24, delay 10000ms
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:218:20) {
+  errno: -104,
+  code: 'ECONNRESET',
+  syscall: 'read'
+}
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 25, delay 10000ms
+==> Running 'npm run start:prod'
+> replicate@1.0.0 start:prod
+> npm run start:web:prod
+> replicate@1.0.0 start:web:prod
+> node --max-old-space-size=512 src/index.js
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+Server is running on port 10000
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 1, delay 500ms
+Error: Connection is closed.
+    at EventEmitter.connectionCloseHandler (/opt/render/project/src/node_modules/ioredis/built/Redis.js:207:28)
+    at Object.onceWrapper (node:events:639:26)
+    at EventEmitter.emit (node:events:536:35)
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 2, delay 1000ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 3, delay 1500ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 4, delay 2000ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 5, delay 2500ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 6, delay 3000ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 7, delay 3500ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 8, delay 4000ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 9, delay 4500ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 10, delay 5000ms
+Redis (Queue/API): Connection established.
+Redis: Retrying connection, attempt 11, delay 5500ms
