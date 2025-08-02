@@ -33,53 +33,43 @@ export const alignText = (pdfText, transcription, language) => {
   const pdfWords = tokenize(pdfText);
   const transcribedWords = getWordTimestamps(transcription);
 
-  // Initialize DP table
-  const dp = Array(pdfWords.length + 1)
-    .fill(null)
-    .map(() => Array(transcribedWords.length + 1).fill(0));
+  const alignedText = [];
+  let transcribedIdx = 0;
 
-  // Fill DP table
-  for (let i = 1; i <= pdfWords.length; i++) {
-    for (let j = 1; j <= transcribedWords.length; j++) {
-      if (pdfWords[i - 1].normalized === transcribedWords[j - 1].word) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+  // Define a search window to limit how far ahead we look for a match
+  // This prevents excessive comparisons and keeps memory usage low.
+  // Adjust this value based on expected word skips/insertions.
+  const SEARCH_WINDOW = 100; // Look ahead up to 100 words in transcription
+
+  for (let i = 0; i < pdfWords.length; i++) {
+    const currentPdfWord = pdfWords[i];
+    let foundMatch = false;
+
+    // Search for the current PDF word in the remaining transcribed words within the window
+    for (let j = transcribedIdx; j < Math.min(transcribedWords.length, transcribedIdx + SEARCH_WINDOW); j++) {
+      if (currentPdfWord.normalized === transcribedWords[j].word) {
+        // Match found
+        alignedText.push({
+          word: currentPdfWord.original,
+          startTime: transcribedWords[j].startTime,
+          endTime: transcribedWords[j].endTime,
+          chunk: transcribedWords[j].chunk
+        });
+        transcribedIdx = j + 1; // Advance transcription pointer past the matched word
+        foundMatch = true;
+        break; // Move to the next PDF word
       }
     }
-  }
 
-  // Backtrack to find the alignment for every original PDF word
-  const alignedText = [];
-  let i = pdfWords.length;
-  let j = transcribedWords.length;
-
-  while (i > 0 || j > 0) {
-    if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + 1 && pdfWords[i - 1].normalized === transcribedWords[j - 1].word) {
-      // Match found, use original PDF word with transcription timing
-      alignedText.unshift({
-        word: pdfWords[i - 1].original,
-        startTime: transcribedWords[j - 1].startTime,
-        endTime: transcribedWords[j - 1].endTime,
-        chunk: transcribedWords[j-1].chunk
-      });
-      i--;
-      j--;
-    } else if (i > 0 && (j === 0 || (dp[i - 1][j] >= (dp[i][j-1] || 0)))) {
-      // Word exists in PDF but not in transcription, preserve it
-      alignedText.unshift({
-        word: pdfWords[i - 1].original,
+    if (!foundMatch) {
+      // No match found for this PDF word in the search window
+      // Add the PDF word without timestamp information
+      alignedText.push({
+        word: currentPdfWord.original,
         startTime: null,
         endTime: null,
         chunk: null
       });
-      i--;
-    } else if (j > 0) {
-      // Word exists in transcription but not in PDF, skip it
-      j--;
-    } else {
-      // Should not be reached
-      break;
     }
   }
 
