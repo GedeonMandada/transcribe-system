@@ -7,8 +7,8 @@
     "start": "nodemon --max-old-space-size=512 src/index.js",
     "start:web:prod": "node --max-old-space-size=512 src/index.js",
     "start:prod": "concurrently \"npm:worker:prod\" \"npm:start:web:prod\"",
-    "worker": "nodemon --max-old-space-size=512 src/worker.js",
-    "worker:prod": "node --max-old-space-size=512 src/worker.js",
+    "worker": "nodemon --max-old-space-size=1024 src/worker.js",
+    "worker:prod": "node --max-old-space-size=1024 src/worker.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -1,5 +1,81 @@
-npm error code EJSONPARSE
-npm error JSON.parse Invalid package.json: JSONParseError: Expected ',' or '}' after property value in JSON at position 314 (line 10 column 5) while parsing near "...art:web:prod\\\"\"\n    \"worker\": \"nodemon -..."
-npm error JSON.parse Failed to parse JSON data.
-npm error JSON.parse Note: package.json must be actual JSON, not just JavaScript.
-npm error A complete log of this run can be found in: C:\Users\SAMSUNG\AppData\Local\npm-cache\_logs\2025-08-02T13_35_30_451Z-debug-0.log
+2025-08-02T14:04:26.266780118Z ==> Cloning from https://github.com/GedeonMandada/transcribe-system
+2025-08-02T14:04:28.494727572Z ==> Checking out commit bbc1ba664e46bc2d2a8b0029a6a7b1064b73674b in branch main
+2025-08-02T14:04:29.999169759Z ==> Downloading cache...
+2025-08-02T14:04:44.9180676Z ==> Transferred 130MB in 8s. Extraction took 4s.
+2025-08-02T14:05:07.640836322Z ==> Requesting Node.js version 20
+2025-08-02T14:05:07.777418661Z ==> Using Node.js version 20.19.4 via environment variable NODE_VERSION
+2025-08-02T14:05:07.804107373Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2025-08-02T14:05:07.867493568Z ==> Running build command 'npm install'...
+2025-08-02T14:05:09.159507066Z 
+2025-08-02T14:05:09.159533396Z up to date, audited 270 packages in 1s
+2025-08-02T14:05:09.159543477Z 
+2025-08-02T14:05:09.161372068Z 36 packages are looking for funding
+2025-08-02T14:05:09.161380859Z   run `npm fund` for details
+2025-08-02T14:05:09.161383679Z 
+2025-08-02T14:05:09.161387459Z found 0 vulnerabilities
+2025-08-02T14:05:10.758257103Z ==> Uploading build...
+2025-08-02T14:05:20.113642923Z ==> Uploaded in 6.1s. Compression took 3.2s
+2025-08-02T14:05:20.146986779Z ==> Build successful 🎉
+2025-08-02T14:05:23.732714179Z ==> Deploying...
+2025-08-02T14:05:37.736427757Z ==> Running 'npm run start:prod'
+2025-08-02T14:05:37.846535056Z 
+2025-08-02T14:05:37.846568437Z > replicate@1.0.0 start:prod
+2025-08-02T14:05:37.846571967Z > concurrently "npm:worker:prod" "npm:start:web:prod"
+2025-08-02T14:05:37.846573667Z 
+2025-08-02T14:05:38.315948938Z [start:web:prod] 
+2025-08-02T14:05:38.315970248Z [start:web:prod] > replicate@1.0.0 start:web:prod
+2025-08-02T14:05:38.315974448Z [start:web:prod] > node --max-old-space-size=512 src/index.js
+2025-08-02T14:05:38.315978168Z [start:web:prod] 
+2025-08-02T14:05:38.320669446Z [worker:prod] 
+2025-08-02T14:05:38.320684887Z [worker:prod] > replicate@1.0.0 worker:prod
+2025-08-02T14:05:38.320688587Z [worker:prod] > node --max-old-space-size=512 src/worker.js
+2025-08-02T14:05:38.320691267Z [worker:prod] 
+2025-08-02T14:05:38.885616763Z [start:web:prod] [dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+2025-08-02T14:05:39.084807823Z [worker:prod] [dotenv@17.2.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+2025-08-02T14:05:39.620673432Z [start:web:prod] Server is running on port 10000
+2025-08-02T14:05:39.635997232Z [start:web:prod] Redis (Queue/API): Connection established.
+2025-08-02T14:05:39.905580701Z [worker:prod] Worker started and waiting for jobs...
+2025-08-02T14:05:39.947143629Z [worker:prod] Redis (Worker): Connection established.
+2025-08-02T14:05:45.491819112Z ==> Your service is live 🎉
+2025-08-02T14:05:45.821374134Z ==> 
+2025-08-02T14:05:46.143275306Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T14:05:46.178639611Z ==> 
+2025-08-02T14:05:46.214841216Z ==> Available at your primary URL https://sermon-api-aqtq.onrender.com
+2025-08-02T14:05:46.497945134Z ==> 
+2025-08-02T14:05:46.754240317Z ==> ///////////////////////////////////////////////////////////
+2025-08-02T14:06:09.034307959Z [worker:prod] Processing sermon with audio: https://d21kl6o5a7faj0.cloudfront.net/repo/9a7/9a70775fc8357d9124c11130b61e7ed4469db640d77148e2504de71330391901b3a96217992712e22972dee32fbbd4b65cd671e58786a8876a51d7af81eb82c6.m4a
+2025-08-02T14:06:09.703296908Z [worker:prod] Delimiter found. Cleaning PDF text...
+2025-08-02T14:06:09.703632205Z [worker:prod] Starting transcription for https://d21kl6o5a7faj0.cloudfront.net/repo/9a7/9a70775fc8357d9124c11130b61e7ed4469db640d77148e2504de71330391901b3a96217992712e22972dee32fbbd4b65cd671e58786a8876a51d7af81eb82c6.m4a...
+2025-08-02T14:06:10.040922498Z [worker:prod] Extended lock for job 8
+2025-08-02T14:06:10.163882095Z [worker:prod] Transcription status: processing. Polling again in 30s...
+2025-08-02T14:06:40.233120329Z [worker:prod] Extended lock for job 8
+2025-08-02T14:06:40.381416025Z [worker:prod] Transcription status: processing. Polling again in 30s...
+2025-08-02T14:07:10.449076752Z [worker:prod] Extended lock for job 8
+2025-08-02T14:07:10.59453805Z [worker:prod] Transcription status: processing. Polling again in 30s...
+2025-08-02T14:07:40.661141591Z [worker:prod] Extended lock for job 8
+2025-08-02T14:07:40.980823637Z [worker:prod] Transcription succeeded.
+2025-08-02T14:07:41.985305293Z [worker:prod] 
+2025-08-02T14:07:41.985339853Z [worker:prod] <--- Last few GCs --->
+2025-08-02T14:07:41.985344553Z [worker:prod] 
+2025-08-02T14:07:41.985349133Z [worker:prod] [136:0x29c10c60]   123506 ms: Scavenge 432.8 (523.9) -> 432.6 (524.9) MB, 2.06 / 0.00 ms  (average mu = 0.977, current mu = 0.792) allocation failure; 
+2025-08-02T14:07:41.985352744Z [worker:prod] [136:0x29c10c60]   123511 ms: Scavenge 433.6 (524.9) -> 432.5 (531.9) MB, 4.52 / 0.00 ms  (average mu = 0.977, current mu = 0.792) allocation failure; 
+2025-08-02T14:07:41.985356954Z [worker:prod] [136:0x29c10c60]   123598 ms: Mark-Compact 439.4 (531.9) -> 438.2 (539.9) MB, 85.85 / 0.00 ms  (average mu = 0.929, current mu = 0.525) allocation failure; scavenge might not succeed
+2025-08-02T14:07:41.985360894Z [worker:prod] 
+2025-08-02T14:07:41.985364374Z [worker:prod] 
+2025-08-02T14:07:41.985367864Z [worker:prod] <--- JS stacktrace --->
+2025-08-02T14:07:41.985371704Z [worker:prod] 
+2025-08-02T14:07:41.985375974Z [worker:prod] FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+2025-08-02T14:07:41.985395325Z [worker:prod] ----- Native stack trace -----
+2025-08-02T14:07:41.985397754Z [worker:prod] 
+2025-08-02T14:07:41.98660164Z [worker:prod]  1: 0xb8cf03 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+2025-08-02T14:07:41.986982387Z [worker:prod]  2: 0xf060d0 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+2025-08-02T14:07:41.987397036Z [worker:prod]  3: 0xf063b7 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [node]
+2025-08-02T14:07:41.987834665Z [worker:prod]  4: 0x1118005  [node]
+2025-08-02T14:07:41.988314295Z [worker:prod]  5: 0x112fe88 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [node]
+2025-08-02T14:07:41.988939079Z [worker:prod]  6: 0x1105fa1 v8::internal::HeapAllocator::AllocateRawWithLightRetrySlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]
+2025-08-02T14:07:41.989387558Z [worker:prod]  7: 0x1107135 v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment) [node]
+2025-08-02T14:07:41.989884808Z [worker:prod]  8: 0x10e4786 v8::internal::Factory::NewFillerObject(int, v8::internal::AllocationAlignment, v8::internal::AllocationType, v8::internal::AllocationOrigin) [node]
+2025-08-02T14:07:41.99043746Z [worker:prod]  9: 0x15402c6 v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [node]
+2025-08-02T14:07:41.991059173Z [worker:prod] 10: 0x1979ef6  [node]
+2025-08-02T14:07:42.146912507Z [worker:prod] Aborted (core dumped)
+2025-08-02T14:07:42.15612513Z [worker:prod] npm run worker:prod exited with code 134
