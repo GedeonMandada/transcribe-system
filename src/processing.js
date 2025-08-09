@@ -1,9 +1,15 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { alignText } from './align.js';
 import { withRetry } from './retry.js';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import fetch from 'node-fetch';
 import Replicate from 'replicate';
+import fs from 'fs/promises';
+import path from 'path';
+import Redis from 'ioredis';
+
 
 let s3Client;
 const getS3Client = () => {
@@ -22,7 +28,7 @@ const getS3Client = () => {
 
 const uploadToR2 = async (fileName, data) => {
   const command = new PutObjectCommand({
-    Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+    Bucket: BUCKET_NAME,
     Key: fileName,
     Body: JSON.stringify(data, null, 2),
     ContentType: 'application/json',
@@ -41,22 +47,43 @@ const uploadToR2 = async (fileName, data) => {
   }
 };
 
-const cleanPdfText = (text) => {
-  const delimiter = '';
-  const parts = text.split(delimiter);
+const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME;
 
-  if (parts.length > 2) {
-    console.log("Delimiter found. Cleaning PDF text...");
-    const result = parts[1].trim();
-    if (result) {
-      return result;
+const redis = new Redis(process.env.REDIS_URL);
+
+const updateAudioUrlIndex = async (audioUrl, sermonId) => {
+    try {
+        await redis.hset('audio_url_index', audioUrl, sermonId);
+        console.log(`Redis audio URL index updated successfully for ${audioUrl}.`);
+    } catch (error) {
+        console.error('Error updating the Redis audio URL index:', error);
+        throw error; // Re-throw to mark the job as failed
     }
-    console.warn("Warning: PDF cleaning resulted in empty text, falling back to raw text.");
-  } else {
-    console.warn(`Warning: Delimiter '${delimiter}' not found in PDF or not found enough. Using raw text.`);
+};
+
+const cleanPdfText = (text) => {
+  const delimiters = ['', '`']; // Check for both delimiters
+  let contentAfterDelimiter = '';
+  let foundDelimiter = false;
+
+  for (const delimiter of delimiters) {
+    const index = text.indexOf(delimiter);
+    if (index !== -1) {
+      contentAfterDelimiter = text.substring(index + delimiter.length).trim();
+      foundDelimiter = true;
+      break;
+    }
+  }
+
+  if (foundDelimiter) {
+    console.log("Delimiter found. Cleaning PDF text...");
+    if (contentAfterDelimiter) {
+      return contentAfterDelimiter;
+    }
+    throw new MissingDelimiterError('PDF content after delimiter is empty.');
   }
   
-  return text;
+  throw new MissingDelimiterError(`Neither of the expected delimiters ('' or ``) found in PDF.`);
 };
 
 const generateRandomId = (length = 6) => {
@@ -74,8 +101,17 @@ const extractTitleFromPdf = async (pdfData) => {
     firstPage = await pdfData.getPage(1);
     const textContent = await firstPage.getTextContent();
     const rawText = textContent.items.map(item => item.str).join(' ');
-    const delimiter = '';
-    const title = rawText.split(delimiter)[0].trim();
+    console.log('Raw text from PDF (first page):', rawText.substring(0, 500) + '...'); // Log first 500 chars
+    const delimiters = ['', '`']; // Check for both delimiters
+    let title = 'Untitled';
+
+    for (const delimiter of delimiters) {
+      const parts = rawText.split(delimiter);
+      if (parts.length >= 2) {
+        title = parts[0].trim();
+        break;
+      }
+    }
     return title.replace(/\s+/g, ' ').trim() || 'Untitled';
   } catch (error) {
     console.error("Failed to extract title from PDF:", error);
@@ -86,6 +122,8 @@ const extractTitleFromPdf = async (pdfData) => {
     }
   }
 };
+
+
 
 export const processSermon = async (sermon, job) => {
   const replicate = new Replicate({
@@ -168,7 +206,9 @@ export const processSermon = async (sermon, job) => {
       console.error("The transcription service did not return a valid result for the following sermon:");
       console.error(JSON.stringify(sermon, null, 2));
       console.error("--- End of Error Report ---\n");
-      return;
+      // We will not re-throw here, as this is a data issue, not a system issue.
+      // The job will be marked as completed, but no output will be generated.
+      return; 
     }
 
     // Force the detected language to match the input language
@@ -177,7 +217,12 @@ export const processSermon = async (sermon, job) => {
     const alignment = alignText(cleanedText, transcription, sermon.language);
 
     // New Filename and ID Generation
-    const safeTitle = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const safeTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9\s_]/g, '') // Remove all non-alphanumeric, non-space, non-underscore characters
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .replace(/^_|_$/g, '') // Remove leading/trailing underscores
+        .substring(0, 100); // Truncate to 100 characters
     const randomId = generateRandomId();
     const newSermonId = `${safeTitle}_${sermon.language}_${randomId}`;
 
@@ -192,6 +237,16 @@ export const processSermon = async (sermon, job) => {
 
     await uploadToR2(`${newSermonId}.json`, processedData);
 
+    // After successful upload, update the index
+    console.log(`Attempting to update Redis audio_url_index for audioUrl: ${sermon.audioUrl} with sermonId: ${newSermonId}`);
+    await updateAudioUrlIndex(sermon.audioUrl, newSermonId);
+    console.log(`Successfully updated Redis audio_url_index for ${sermon.audioUrl}.`);
+
+    // Store sermon metadata in a separate Redis hash for frontend display/search
+    console.log(`Attempting to store sermon_metadata for sermonId: ${newSermonId} with title: ${title} and audioUrl: ${sermon.audioUrl}`);
+    await redis.hmset(newSermonId, 'title', title, 'audioUrl', sermon.audioUrl);
+    console.log(`Redis sermon_metadata updated successfully for ${newSermonId}.`);
+
   } catch (error) {
     if (error.name === 'InvalidPDFException') {
       console.error("\n--- Invalid PDF Detected ---");
@@ -199,8 +254,24 @@ export const processSermon = async (sermon, job) => {
       console.error("Please check the following sermon data in your input file and ensure the 'pdfUrl' points to a valid PDF:");
       console.error(JSON.stringify(sermon, null, 2));
       console.error("--- End of Error Report ---\n");
-    } else {
+    } else if (error.name === 'MissingDelimiterError') {
+        console.error(`\n--- PDF Processing Error for ${sermon.audioUrl} ---`);
+        console.error(`Error: ${error.message}`);
+        console.error("This usually means the PDF is not formatted correctly with the required '' delimiter.");
+        console.error("Please check the following sermon data and the corresponding PDF file:");
+        console.error(JSON.stringify(sermon, null, 2));
+        console.error("--- End of Error Report ---\n");
+    } else if (error.name === 'LockTimeoutError') {
+        console.error(`\n--- Locking Error for ${sermon.audioUrl} ---`);
+        console.error(`Error: ${error.message}`);
+        console.error("This means the process could not acquire the lock to update the index file in time.");
+        console.error("This could be due to high server load or a stalled process.");
+        console.error("The job will be retried automatically.");
+        console.error("--- End of Error Report ---\n");
+    }
+    else {
       console.error(`Error processing ${sermon.audioUrl}:`, error);
     }
+    throw error; // Re-throw the error to mark the job as failed in BullMQ
   }
 };

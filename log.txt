@@ -1,23 +1,3 @@
-PS C:\Users\SAMSUNG\Downloads\replicate> npm start
-
-> replicate@1.0.0 start
-> nodemon --max-old-space-size=512 src/index.js
-
-[nodemon] 3.1.10
-[nodemon] to restart at any time, enter `rs`
-[nodemon] watching path(s): *.*
-[nodemon] watching extensions: js,mjs,cjs,json
-[nodemon] starting `node --max-old-space-size=512 src/index.js`
-[dotenv@17.2.1] injecting env (7) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.loc
-al', '.env'] }
-file:///C:/Users/SAMSUNG/Downloads/replicate/src/queue.js:7
-export const sermonQueueEvents = new QueueEvents('sermon-processing', { connection: workerConnection });                                                                                    ^
-
-ReferenceError: workerConnection is not defined
-    at file:///C:/Users/SAMSUNG/Downloads/replicate/src/queue.js:7:85
-    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
-    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
-    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
-
-Node.js v22.17.1
-[nodemon] app crashed - waiting for file changes before starting...
+[DEEP DEBUG] Starting search for query: "https://d21kl6o5a7faj0.cloudfront.net/repo/bac/bacce5e6b9709b3e19d7cc867ed34072d09cfea1f51a12c61b43bad024c7faec9d77cecab0690599d99c33f9408fbf7f64f89efd95e30be4fa5869682bdf4285.m4a"
+[DEEP DEBUG] Found 1544 total sermons to search through.
+[DEEP DEBUG] Search succeeded. Found sermon with ID: m_kits_ln_q2533x

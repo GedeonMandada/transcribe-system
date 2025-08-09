@@ -4,6 +4,15 @@ import cors from 'cors';
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { withRetry } from './retry.js';
 import { sermonQueue, sermonQueueEvents } from './queue.js';
+import axios from 'axios';
+import FormData from 'form-data';
+import stream from 'stream';
+import fs from 'fs/promises';
+import path from 'path';
+import Redis from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -85,33 +94,42 @@ app.get('/api/sermons/status/:jobId', async (req, res) => {
   }
 });
 
+app.post('/api/sermons/refresh-cache', (req, res) => {
+    console.log('Received request to refresh cache (no-op for Redis index).');
+    res.status(200).send({ message: 'Cache refresh request received. Redis index is not cleared by this action.' });
+});
+
 app.get('/api/sermons', async (req, res) => {
   try {
-    const { Contents } = await withRetry(async () => {
-      const command = new ListObjectsV2Command({
-        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-      });
-      return getS3Client().send(command);
-    }, {
-      onRetry: (error, attempt) => console.warn(`R2 list objects attempt ${attempt} failed. Retrying...`, error.message)
+    const allAudioUrlToSermonIdMap = await redis.hgetall('audio_url_index'); // { audioUrl: sermonId, ... }
+
+    const sermonPromises = Object.values(allAudioUrlToSermonIdMap).map(async (sermonId) => {
+      const metadata = await redis.hgetall(sermonId); // { title: '...', audioUrl: '...' }
+      if (metadata && metadata.title && metadata.audioUrl) {
+        return { id: sermonId, title: metadata.title, audioUrl: metadata.audioUrl };
+      }
+      return null; // Filter out incomplete entries
     });
 
-    if (!Contents) {
-      return res.send([]);
-    }
+    const sermonsArray = (await Promise.all(sermonPromises)).filter(Boolean);
 
-    // Only return metadata (id and title) to avoid memory issues
-    const sermonsMetadata = Contents.map(object => {
-      const id = object.Key.replace('.json', ''); // Assuming filename is the ID
-      // Attempt to extract title from the ID, or use a default
-      const parts = id.split('_');
-      const title = parts.slice(0, -2).join(' ').replace(/_/g, ' ') || 'Untitled Sermon'; // Remove last two parts (language and random ID)
-      return { id, title };
-    });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
 
-    res.send(sermonsMetadata);
+    const results = {
+        sermons: sermonsArray.slice(startIndex, endIndex),
+        total: sermonsArray.length,
+        page,
+        limit,
+        totalPages: Math.ceil(sermonsArray.length / limit),
+    };
+
+    res.send(results);
+
   } catch (error) {
-    console.error('Error listing sermons from R2:', error);
+    console.error('Error listing sermons from Redis:', error);
     res.status(500).send({ message: 'Error listing sermons' });
   }
 });
@@ -144,6 +162,165 @@ app.get('/api/sermons/:id', async (req, res) => {
     }
   }
 });
+
+app.get('/api/app-sermons/by-audio-url', async (req, res) => {
+  const audioUrlQuery = req.query.url;
+
+  if (!audioUrlQuery) {
+    return res.status(400).send({ message: 'The "url" query parameter is required.' });
+  }
+
+  const query = audioUrlQuery.toLowerCase();
+  console.log(`[DEEP DEBUG] Starting search for query: "${query}"`);
+
+  try {
+    // Replicating the exact logic from sermons.html: fetch all and perform an "includes" search.
+    
+    // 1. Fetch all sermon IDs.
+    const allAudioUrlToSermonIdMap = await redis.hgetall('audio_url_index');
+    if (!allAudioUrlToSermonIdMap) {
+        return res.status(404).send({ message: 'Sermon index is empty.' });
+    }
+
+    // 2. Fetch metadata for all sermons.
+    const sermonPromises = Object.values(allAudioUrlToSermonIdMap).map(async (sermonId) => {
+      const metadata = await redis.hgetall(sermonId);
+      if (metadata && metadata.title && metadata.audioUrl) {
+        return { id: sermonId, title: metadata.title, audioUrl: metadata.audioUrl };
+      }
+      return null;
+    });
+    const allSermons = (await Promise.all(sermonPromises)).filter(Boolean);
+    console.log(`[DEEP DEBUG] Found ${allSermons.length} total sermons to search through.`);
+
+    // 3. Find the specific sermon by filtering with the correct "includes" logic.
+    const filteredSermons = allSermons.filter(sermon => {
+        return sermon.audioUrl && sermon.audioUrl.toLowerCase().includes(query);
+    });
+
+    if (filteredSermons.length === 0) {
+      const debugInfo = {
+        message: "Sermon not found. The server could not find a match for your query.",
+        yourQuery: audioUrlQuery,
+        processedQuery: query,
+        totalSermonsSearched: allSermons.length,
+        urlsSearched: allSermons.map(s => s.audioUrl)
+      };
+      return res.status(404).send(debugInfo);
+    }
+
+    // 4. Get the first match, just like the search script.
+    const foundSermon = filteredSermons[0];
+    console.log(`[DEEP DEBUG] Search succeeded. Found sermon with ID: ${foundSermon.id}`);
+
+    // 5. Now that we have the correct ID, fetch the full object from R2.
+    const { Body } = await withRetry(async () => {
+      const getObjectCommand = new GetObjectCommand({
+        Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+        Key: `${foundSermon.id}.json`,
+      });
+      return getS3Client().send(getObjectCommand);
+    });
+
+    if (!Body) {
+      return res.status(404).send({ message: 'Sermon data not found in storage, though it was found in the index.' });
+    }
+
+    const data = await Body.transformToString();
+    res.send(JSON.parse(data));
+
+  } catch (error) {
+    console.error(`Error fetching sermon by audio URL query ${audioUrlQuery}:`, error);
+    if (error.name === 'NoSuchKey') {
+      res.status(404).send({ message: 'Sermon data not found in storage.' });
+    } else {
+      res.status(500).send({ message: 'An error occurred while fetching sermon data.' });
+    }
+  }
+});
+
+
+
+app.get('/api/sermons/:id/vtt', async (req, res) => {
+    const sermonId = req.params.id;
+    try {
+        // 1. Fetch JSON from R2
+        const { Body } = await withRetry(async () => {
+            const getObjectCommand = new GetObjectCommand({
+                Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+                Key: `${sermonId}.json`,
+            });
+            return getS3Client().send(getObjectCommand);
+        });
+
+        if (!Body) {
+            return res.status(404).send('Sermon JSON not found.');
+        }
+
+        // Buffer the stream into memory
+        const jsonBuffer = await Body.transformToByteArray();
+
+        // 2. Prepare data for the VTT API
+        const formData = new FormData();
+        formData.append('file', Buffer.from(jsonBuffer), {
+            filename: `${sermonId}.json`,
+            contentType: 'application/json',
+        });
+
+        // 3. Call the external VTT API
+        const vttApiResponse = await axios.post('https://api-vtt.onrender.com/upload-json', formData, {
+            headers: {
+                ...formData.getHeaders(),
+                'Accept': 'text/vtt',
+            },
+            responseType: 'stream',
+        });
+
+        // 4. Stream the VTT response to the client
+        res.setHeader('Content-Type', 'text/vtt');
+        vttApiResponse.data.pipe(res);
+
+    } catch (error) {
+        console.error(`Error generating VTT for sermon ${sermonId}:`, error.message);
+        if (error.response) {
+            console.error('VTT API Error Response:', error.response.data);
+            res.status(error.response.status).send('Error from VTT API');
+        } else if (error.name === 'NoSuchKey') {
+            res.status(404).send('Sermon not found');
+        } else {
+            res.status(500).send('Error generating VTT');
+        }
+    }
+});
+
+
+
+
+app.post('/api/admin/clear-index', async (req, res) => {
+    console.log('Received request to clear Redis index.');
+    try {
+        await redis.del('audio_url_index');
+        await redis.del('sermon_metadata');
+        console.log('Redis indexes cleared.');
+        res.status(200).send({ message: 'Redis indexes cleared successfully.' });
+    } catch (error) {
+        console.error('Error clearing Redis indexes:', error);
+        res.status(500).send({ message: 'Error clearing Redis indexes.' });
+    }
+});
+
+app.post('/api/admin/reindex', async (req, res) => {
+    console.log('Received request to re-index. Adding job to queue...');
+    try {
+        await sermonQueue.add('reindex', {});
+        res.status(202).send({ message: 'Re-indexing job added to queue.' });
+    } catch (error) {
+        console.error('Error adding re-index job to queue:', error);
+        res.status(500).send({ message: 'Error adding re-index job to queue.' });
+    }
+});
+
+
 
 app.get('/', (req, res) => {
   res.sendFile('index.html', { root: 'public' });

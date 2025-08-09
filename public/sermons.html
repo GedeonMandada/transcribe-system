@@ -3,32 +3,223 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sermon List</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Sermon Library</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Google Fonts & Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="/style.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100">
-  <div class="container mx-auto p-4">
-    <h1 class="text-3xl font-bold mb-4">Sermon List</h1>
-    <div id="sermon-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+<body>
+
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo"><i class="material-icons">library_music</i>Sermon Library</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row">
+      <div class="col s12 m8 offset-m2">
+        <div class="card-panel">
+          <div class="input-field">
+            <i class="material-icons prefix">search</i>
+            <input type="text" id="search-url-input" placeholder="Enter sermon title or audio URL...">
+            <label for="search-url-input">Search</label>
+          </div>
+          <button id="search-url-btn" class="btn waves-effect waves-light">Search</button>
+          <div id="search-error" class="red-text" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+        <div class="col s12" style="text-align: right;">
+            <button id="refresh-cache-btn" class="btn-floating btn-large waves-effect waves-light blue"><i class="material-icons">refresh</i></button>
+        </div>
+    </div>
+
+    <div id="loading-spinner" class="preloader-wrapper big active" style="display: none;">
+      <div class="spinner-layer spinner-blue-only">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="sermon-list" class="row" style="display: none;"></div>
+
+    <div id="pagination-controls" class="center-align">
+        <ul class="pagination">
+            <li class="disabled" id="prev-page"><a href="#!"><i class="material-icons">chevron_left</i></a></li>
+            <li class="active" id="page-info-container"><a href="#!" id="page-info">Page 1 of 1</a></li>
+            <li class="waves-effect" id="next-page"><a href="#!"><i class="material-icons">chevron_right</i></a></li>
+        </ul>
+    </div>
   </div>
 
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   <script>
-    const sermonList = document.getElementById('sermon-list');
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Materialize components
+      M.AutoInit();
 
-    fetch('/api/sermons')
-      .then(response => response.json())
-      .then(sermons => {
-        sermons.forEach(sermon => {
-          const sermonCard = `
-            <div class="bg-white p-4 rounded-lg shadow-md">
-              <h2 class="text-xl font-bold mb-2 truncate" title="${sermon.title}">${sermon.title}</h2>
-              <a href="/sermon.html?id=${sermon.id}" class="text-blue-500 hover:underline">View Sermon</a>
-            </div>
-          `;
-          sermonList.innerHTML += sermonCard;
-        });
+      const sermonList = document.getElementById('sermon-list');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const searchInput = document.getElementById("search-url-input");
+      const searchBtn = document.getElementById("search-url-btn");
+      const errorMsg = document.getElementById("search-error");
+      const refreshBtn = document.getElementById("refresh-cache-btn");
+
+      function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+      }
+      
+      function hideError() {
+          errorMsg.textContent = '';
+          errorMsg.style.display = 'none';
+      }
+
+      // --- State for Pagination ---
+      let currentPage = 1;
+      const sermonsPerPage = 20;
+      let allSermonsForSearch = [];
+
+      // --- Fetch all sermons for search functionality (once on load) ---
+      const fetchAllSermonsForSearch = async () => {
+        try {
+          const response = await fetch('/api/sermons?page=1&limit=10000'); 
+          const data = await response.json();
+          allSermonsForSearch = data.sermons; 
+        } catch (error) {
+          console.error('Error fetching all sermons for search:', error);
+        }
+      };
+
+      // --- Fetch and Render Sermons (for current page display) ---
+      const fetchAndRenderSermons = async (page) => {
+        loadingSpinner.style.display = 'block';
+        sermonList.style.display = 'none';
+
+        try {
+          const response = await fetch(`/api/sermons?page=${page}&limit=${sermonsPerPage}`);
+          const data = await response.json();
+          const { sermons, total, totalPages } = data;
+
+          if (sermons.length === 0) {
+            sermonList.innerHTML = '<p class="center-align grey-text">No processed sermons found.</p>';
+            document.getElementById('pagination-controls').style.display = 'none';
+            return;
+          }
+
+          sermonList.innerHTML = ''; // Clear previous items
+          sermons.forEach(sermon => {
+            const col = document.createElement('div');
+            col.className = 'col s12 m6 l4';
+            const sermonCard = `
+              <div class="card hoverable">
+                <div class="card-content">
+                  <span class="card-title">${sermon.title}</span>
+                  <p class="grey-text truncate-text">ID: ${sermon.id}</p>
+                </div>
+                <div class="card-action">
+                  <a href="/sermon.html?id=${sermon.id}" class="btn-flat waves-effect waves-teal">View Sermon</a>
+                </div>
+              </div>
+            `;
+            col.innerHTML = sermonCard;
+            sermonList.appendChild(col);
+          });
+
+          // --- Update Pagination Controls ---
+          document.getElementById('pagination-controls').style.display = 'block';
+          const pageInfo = document.getElementById('page-info');
+          pageInfo.textContent = `Page ${page} of ${totalPages}`;
+
+          const prevPage = document.getElementById('prev-page');
+          const nextPage = document.getElementById('next-page');
+
+          prevPage.classList.toggle('disabled', page <= 1);
+          nextPage.classList.toggle('disabled', page >= totalPages);
+
+          currentPage = page;
+        } catch (error) {
+            sermonList.style.display = 'block';
+            sermonList.innerHTML = '<p class="center-align red-text">Error loading sermons. Please try again later.</p>';
+            console.error('Error fetching sermons:', error);
+        } finally {
+            loadingSpinner.style.display = 'none';
+            sermonList.style.display = 'block';
+        }
+      };
+
+      // --- Pagination Event Listeners ---
+      document.getElementById('prev-page').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!e.currentTarget.classList.contains('disabled')) {
+          fetchAndRenderSermons(currentPage - 1);
+        }
       });
+
+      document.getElementById('next-page').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (!e.currentTarget.classList.contains('disabled')) {
+          fetchAndRenderSermons(currentPage + 1);
+        }
+      });
+
+      // --- Initial Load ---
+      fetchAllSermonsForSearch();
+      fetchAndRenderSermons(currentPage);
+
+      // --- Refresh Cache Logic ---
+      refreshBtn.addEventListener('click', async () => {
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="material-icons">hourglass_top</i>';
+
+        try {
+            const response = await fetch('/api/sermons/refresh-cache', { method: 'POST' });
+            if (!response.ok) throw new Error('Failed to refresh cache.');
+            await fetchAllSermonsForSearch();
+            await fetchAndRenderSermons(1);
+        } catch (error) {
+            M.toast({html: 'Failed to refresh sermon list.'});
+            console.error('Error refreshing cache:', error);
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i class="material-icons">refresh</i>';
+        }
+      });
+
+      // --- Search Logic (Client-side filtering) ---
+      searchBtn.addEventListener("click", () => {
+        const query = searchInput.value.trim().toLowerCase();
+        hideError();
+
+        if (!query) {
+            showError("Please enter a search query.");
+            return;
+        }
+
+        const filteredSermons = allSermonsForSearch.filter(sermon => {
+            return (sermon.title && sermon.title.toLowerCase().includes(query)) ||
+                   (sermon.audioUrl && sermon.audioUrl.toLowerCase().includes(query));
+        });
+
+        if (filteredSermons.length > 0) {
+            window.location.href = `/sermon.html?id=${filteredSermons[0].id}`;
+        } else {
+            showError("No matching sermon found.");
+        }
+      });
+    });
   </script>
 </body>
 </html>
-

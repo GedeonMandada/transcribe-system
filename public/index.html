@@ -3,11 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sermon Transcription System</title>
+  <title>Sermon Transcription System - Admin</title>
+  <!-- Materialize CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Google Fonts & Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="/style.css" rel="stylesheet">
 </head>
 <body>
-  <h1>Welcome to the Sermon Transcription System</h1>
-  <a href="/sermons.html" class="text-blue-500 hover:underline">View Sermons</a>
+
+  <nav>
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo"><i class="material-icons">settings</i>Admin Dashboard</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="row">
+      <div class="col s12 m10 offset-m1 l8 offset-l2">
+
+        <div class="card-panel">
+          <h5>Welcome</h5>
+          <p class="grey-text text-darken-1">This dashboard provides access to the public sermon library and administrative actions for system maintenance.</p>
+          <a href="/sermons.html" class="waves-effect waves-light btn-large"><i class="material-icons left">library_music</i>View Sermon Library</a>
+        </div>
+
+        <div class="card-panel">
+            <h5>Admin Actions</h5>
+            <p class="grey-text text-darken-1">Use these actions to manage the sermon index in the Redis database. These are powerful tools and should be used with care.</p>
+            <div class="section">
+                <a id="reindexBtn" class="waves-effect waves-light btn blue"><i class="material-icons left">sync</i>Re-index All Sermons</a>
+                <p class="caption">Scans R2 storage and rebuilds the search index. Use this if sermons are missing from the library.</p>
+            </div>
+            <div class="divider"></div>
+            <div class="section">
+                <a id="clearIndexBtn" class="waves-effect waves-light btn red"><i class="material-icons left">delete_sweep</i>Clear Entire Index</a>
+                <p class="caption">Deletes all sermon metadata from the index. This cannot be undone without a re-index.</p>
+            </div>
+        </div>
+
+        <div id="status-card" class="card-panel" style="display: none;">
+          <span id="statusMessage" class="white-text"></span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Materialize JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize Materialize components
+      M.AutoInit();
+
+      const clearIndexBtn = document.getElementById('clearIndexBtn');
+      const reindexBtn = document.getElementById('reindexBtn');
+      const statusCard = document.getElementById('status-card');
+      const statusMessageDiv = document.getElementById('statusMessage');
+
+      const showStatus = (message, isError = false) => {
+        statusMessageDiv.textContent = message;
+        statusCard.className = isError ? 'card-panel red darken-2' : 'card-panel teal';
+        statusCard.style.display = 'block';
+      };
+
+      clearIndexBtn.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to delete the entire sermon index? This cannot be undone.')) return;
+        showStatus('Clearing Redis index...');
+        try {
+          const response = await fetch('/api/admin/clear-index', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const data = await response.json();
+          if (response.ok) {
+            showStatus(data.message);
+          } else {
+            showStatus(`Error: ${data.message}`, true);
+          }
+        } catch (error) {
+          showStatus(`Network error: ${error.message}`, true);
+        }
+      });
+
+      reindexBtn.addEventListener('click', async () => {
+        showStatus('Adding re-indexing job to queue...');
+        try {
+          const response = await fetch('/api/admin/reindex', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const data = await response.json();
+          if (response.ok) {
+            showStatus(data.message + ' Check worker logs for progress.');
+          } else {
+            showStatus(`Error: ${data.message}`, true);
+          }
+        } catch (error) {
+          showStatus(`Network error: ${error.message}`, true);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
-

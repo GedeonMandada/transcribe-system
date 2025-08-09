@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Transcript with Highlighting</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    audio {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    #transcript {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 1px solid #ccc;
+      line-height: 1.6;
+      background: #f9f9f9;
+    }
+
+    .cue {
+      color: #aaa;
+      transition: all 0.3s ease;
+    }
+
+    .cue.past {
+      color: #888;
+    }
+
+    .cue.active {
+      color: black;
+      background-color: yellow;
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Audio with Live Transcript</h2>
+
+  <audio id="audio" controls crossorigin="anonymous">
+    <source src="https://res.cloudinary.com/dodqi0ooi/video/upload/v1754336725/FRN60-0417M_Go_Tell_VGR_osbxq2.m4a" type="audio/mp4">
+    <track id="vttTrack" label="English" kind="subtitles" srclang="en" src="https://res.cloudinary.com/dodqi0ooi/raw/upload/v1754336785/subtitles_lp5bcn.vtt" default>
+    Your browser does not support the audio element.
+  </audio>
+
+  <div id="transcript"></div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const transcriptBox = document.getElementById('transcript');
+    const track = audio.textTracks[0];
+
+    track.mode = "hidden";
+
+    const cueElements = [];
+
+    track.addEventListener('load', () => renderTranscript(track.cues));
+    audio.addEventListener('loadedmetadata', () => renderTranscript(track.cues));
+
+    function renderTranscript(cues) {
+      transcriptBox.innerHTML = '';
+      cueElements.length = 0;
+
+      for (let i = 0; i < cues.length; i++) {
+        const cue = cues[i];
+        const div = document.createElement('div');
+        div.className = 'cue';
+        div.textContent = cue.text;
+        transcriptBox.appendChild(div);
+        cueElements.push({ cue, element: div });
+      }
+
+      // Highlight as audio plays
+      audio.addEventListener('timeupdate', () => {
+        const currentTime = audio.currentTime;
+
+        cueElements.forEach(({ cue, element }) => {
+          if (currentTime >= cue.startTime && currentTime <= cue.endTime) {
+            element.classList.add('active');
+            element.classList.remove('past');
+            scrollIntoViewIfNeeded(element);
+          } else if (currentTime > cue.endTime) {
+            element.classList.add('past');
+            element.classList.remove('active');
+          } else {
+            element.classList.remove('active', 'past');
+          }
+        });
+      });
+    }
+
+    function scrollIntoViewIfNeeded(el) {
+      const box = transcriptBox;
+      const boxTop = box.scrollTop;
+      const boxBottom = boxTop + box.clientHeight;
+      const elTop = el.offsetTop;
+      const elBottom = elTop + el.offsetHeight;
+
+      if (elTop < boxTop || elBottom > boxBottom) {
+        box.scrollTo({
+          top: elTop - box.clientHeight / 2,
+          behavior: 'smooth'
+        });
+      }
+    }
+  </script>
+</body>
+</html>

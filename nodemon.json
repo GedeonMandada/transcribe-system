@@ -1,0 +1,6 @@
+{
+  "ignore": [
+    "public/audio_url_index.json",
+    "public/index.lock"
+  ]
+}

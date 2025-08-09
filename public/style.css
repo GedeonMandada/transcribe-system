@@ -1,0 +1,183 @@
+/* public/style.css */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Material+Icons');
+
+/* --- Global Styles & Variables --- */
+:root {
+  --primary-color: #2196F3; /* Blue */
+  --primary-color-dark: #1976D2;
+  --secondary-color: #FFC107; /* Amber */
+  --background-color: #f4f6f8;
+  --surface-color: #ffffff;
+  --on-primary-color: #ffffff;
+  --on-surface-color: #424242; /* Dark Grey */
+  --text-muted-color: #9e9e9e; /* Grey */
+  --highlight-bg-color: #2196F3; /* Default Blue background for highlight */
+  --highlight-text-color: #ffffff; /* Default white text for highlight */
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--background-color);
+  color: var(--on-surface-color);
+}
+
+.container {
+    margin-top: 30px;
+}
+
+/* --- Navigation Bar --- */
+nav {
+    background-color: var(--primary-color);
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.brand-logo i {
+    margin-right: 10px;
+}
+
+/* --- Cards --- */
+.card-panel {
+    border-radius: 8px;
+}
+
+.card .card-action a {
+    color: var(--primary-color) !important;
+}
+
+.card .card-action a:hover {
+    color: var(--primary-color-dark) !important;
+}
+
+/* --- Buttons --- */
+.btn, .btn-large, .btn-floating {
+    background-color: var(--primary-color);
+}
+
+.btn:hover, .btn-large:hover, .btn-floating:hover {
+    background-color: var(--primary-color-dark);
+}
+
+/* --- Sermon Detail Page (sermon.html) --- */
+.audio-player-container {
+  position: sticky;
+  top: 2rem;
+}
+
+.audio-player-container h5 {
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.audio-player-container audio {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.player-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.highlight-options {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.highlight-options h6 {
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.color-picker-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.color-picker-group label {
+    font-size: 0.9rem;
+}
+
+.color-picker-group input[type="color"] {
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+}
+
+.transcript-container {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.transcript-container p {
+    color: var(--text-muted-color);
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.transcript-container .highlight {
+  background-color: var(--highlight-bg-color);
+  color: var(--highlight-text-color);
+  font-weight: 500;
+}
+
+/* --- Utility & Loading Spinner --- */
+#loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#page-info-container {
+    color: #fff;
+    background-color: var(--primary-color);
+}
+
+/* --- Sermon List Card Fixes --- */
+#sermon-list .col {
+    display: flex;
+    flex-direction: column;
+}
+
+#sermon-list .card {
+    flex: 1; /* Allows the card to grow and fill the column space */
+    display: flex;
+    flex-direction: column;
+}
+
+#sermon-list .card .card-content {
+    flex-grow: 1; /* Allows the content area to grow, pushing the action to the bottom */
+}
+
+#sermon-list .card .card-title {
+    font-size: 1.25rem; /* Adjust size as needed */
+    line-height: 1.4;
+}
+
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
